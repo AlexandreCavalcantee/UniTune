@@ -4,6 +4,8 @@ import '../../data/services/itunes_service.dart';
 import '../../domain/entities/song.dart';
 import '../providers/search_provider.dart';
 import '../providers/playlist_provider.dart';
+import '../providers/theme_provider.dart';
+import '../theme/app_theme.dart';
 import 'details_screen.dart';
 
 /// Main search screen.
@@ -36,24 +38,13 @@ class _SearchScreenState extends State<SearchScreen> {
     return Consumer<SearchProvider>(
       builder: (context, provider, _) {
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('UniTune'),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.playlist_play),
-                tooltip: 'My Playlist',
-                onPressed: () => Navigator.pushNamed(context, '/playlist'),
-              ),
-            ],
-          ),
           body: Column(
             children: [
-              _SearchBar(
+              _GradientHeader(
                 controller: _controller,
                 onSearch: () => _onSearch(provider),
+                provider: provider,
               ),
-              _FilterRow(provider: provider),
-              const Divider(height: 1),
               Expanded(child: _ResultsList(provider: provider)),
             ],
           ),
@@ -63,126 +54,248 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 }
 
-// ── Search bar ─────────────────────────────────────────────────────────────
+// ── Gradient header (AppBar + search + filters) ────────────────────────────
 
-class _SearchBar extends StatelessWidget {
-  const _SearchBar({
+class _GradientHeader extends StatelessWidget {
+  const _GradientHeader({
     required this.controller,
     required this.onSearch,
+    required this.provider,
   });
 
   final TextEditingController controller;
   final VoidCallback onSearch;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: controller,
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                hintText: 'Search artists, albums, songs…',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              ),
-              onSubmitted: (_) => onSearch(),
-            ),
-          ),
-          const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: onSearch,
-            style: ElevatedButton.styleFrom(
-              shape: const CircleBorder(),
-              padding: const EdgeInsets.all(14),
-            ),
-            child: const Icon(Icons.search),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Filter row ─────────────────────────────────────────────────────────────
-
-class _FilterRow extends StatelessWidget {
-  const _FilterRow({required this.provider});
-
   final SearchProvider provider;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: Row(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gradient =
+        isDark ? AppTheme.darkHeaderGradient : AppTheme.lightHeaderGradient;
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    return Container(
+      decoration: BoxDecoration(gradient: gradient),
+      child: Column(
         children: [
-          // Radio buttons for search type
-          _TypeRadio(
-            label: 'Song',
-            value: SearchType.song,
-            groupValue: provider.searchType,
-            onChanged: provider.setSearchType,
+          SizedBox(height: topPadding + 8),
+          // ── Title row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                const Icon(Icons.music_note_rounded,
+                    color: Colors.white, size: 28),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'UniTune',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                // Theme toggle
+                Consumer<ThemeProvider>(
+                  builder: (_, themeProvider, __) => IconButton(
+                    icon: Icon(
+                      themeProvider.isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                      color: Colors.white,
+                    ),
+                    tooltip: themeProvider.isDark ? 'Light mode' : 'Dark mode',
+                    onPressed: themeProvider.toggle,
+                  ),
+                ),
+                // Playlist button
+                IconButton(
+                  icon: const Icon(Icons.queue_music_rounded,
+                      color: Colors.white),
+                  tooltip: 'My Playlist',
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/playlist'),
+                ),
+              ],
+            ),
           ),
-          _TypeRadio(
-            label: 'Artist',
-            value: SearchType.artist,
-            groupValue: provider.searchType,
-            onChanged: provider.setSearchType,
+          const SizedBox(height: 12),
+          // ── Search bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    textInputAction: TextInputAction.search,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Search artists, albums, songs…',
+                      hintStyle:
+                          TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+                      prefixIcon: Icon(Icons.search_rounded,
+                          color: Colors.white.withValues(alpha: 0.8)),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.18),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: const BorderSide(
+                            color: Colors.white, width: 1.5),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 0),
+                    ),
+                    onSubmitted: (_) => onSearch(),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Material(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: onSearch,
+                    child: const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Icon(Icons.search_rounded,
+                          color: Colors.white, size: 22),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          _TypeRadio(
-            label: 'Album',
-            value: SearchType.album,
-            groupValue: provider.searchType,
-            onChanged: provider.setSearchType,
+          const SizedBox(height: 12),
+          // ── Filter chips + explicit switch
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _TypeChip(
+                  label: 'Song',
+                  icon: Icons.music_note_rounded,
+                  value: SearchType.song,
+                  groupValue: provider.searchType,
+                  onSelected: provider.setSearchType,
+                ),
+                const SizedBox(width: 8),
+                _TypeChip(
+                  label: 'Artist',
+                  icon: Icons.person_rounded,
+                  value: SearchType.artist,
+                  groupValue: provider.searchType,
+                  onSelected: provider.setSearchType,
+                ),
+                const SizedBox(width: 8),
+                _TypeChip(
+                  label: 'Album',
+                  icon: Icons.album_rounded,
+                  value: SearchType.album,
+                  groupValue: provider.searchType,
+                  onSelected: provider.setSearchType,
+                ),
+                const SizedBox(width: 16),
+                // Explicit filter chip
+                FilterChip(
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.explicit_rounded,
+                        size: 14,
+                        color: provider.allowExplicit
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.7),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Explicit',
+                        style: TextStyle(
+                          color: provider.allowExplicit
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.7),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  selected: provider.allowExplicit,
+                  onSelected: provider.setAllowExplicit,
+                  selectedColor: Colors.white.withValues(alpha: 0.3),
+                  backgroundColor: Colors.white.withValues(alpha: 0.12),
+                  side: BorderSide(
+                    color: provider.allowExplicit
+                        ? Colors.white.withValues(alpha: 0.6)
+                        : Colors.white.withValues(alpha: 0.25),
+                  ),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  showCheckmark: false,
+                ),
+              ],
+            ),
           ),
-          const Spacer(),
-          // Explicit content switch
-          const Text('Explicit'),
-          Switch(
-            value: provider.allowExplicit,
-            onChanged: provider.setAllowExplicit,
-          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
   }
 }
 
-class _TypeRadio extends StatelessWidget {
-  const _TypeRadio({
+class _TypeChip extends StatelessWidget {
+  const _TypeChip({
     required this.label,
+    required this.icon,
     required this.value,
     required this.groupValue,
-    required this.onChanged,
+    required this.onSelected,
   });
 
   final String label;
+  final IconData icon;
   final SearchType value;
   final SearchType groupValue;
-  final ValueChanged<SearchType> onChanged;
+  final ValueChanged<SearchType> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Radio<SearchType>(
-          value: value,
-          groupValue: groupValue,
-          onChanged: (v) {
-            if (v != null) onChanged(v);
-          },
+    final selected = value == groupValue;
+    return FilterChip(
+      avatar: Icon(
+        icon,
+        size: 14,
+        color: selected ? Colors.white : Colors.white.withValues(alpha: 0.7),
+      ),
+      label: Text(
+        label,
+        style: TextStyle(
+          color: selected ? Colors.white : Colors.white.withValues(alpha: 0.7),
+          fontSize: 13,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
         ),
-        Text(label),
-      ],
+      ),
+      selected: selected,
+      onSelected: (v) {
+        if (v) onSelected(value);
+      },
+      selectedColor: Colors.white.withValues(alpha: 0.3),
+      backgroundColor: Colors.white.withValues(alpha: 0.12),
+      side: BorderSide(
+        color: selected
+            ? Colors.white.withValues(alpha: 0.6)
+            : Colors.white.withValues(alpha: 0.25),
+      ),
+      shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      showCheckmark: false,
     );
   }
 }
@@ -197,32 +310,67 @@ class _ResultsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (provider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: CircularProgressIndicator(
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      );
     }
 
     if (provider.errorMessage != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Text(
-            provider.errorMessage!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.red),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline_rounded,
+                  size: 48, color: Theme.of(context).colorScheme.error),
+              const SizedBox(height: 12),
+              Text(
+                provider.errorMessage!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                    fontSize: 15),
+              ),
+            ],
           ),
         ),
       );
     }
 
     if (provider.results.isEmpty) {
-      return const Center(
-        child: Text(
-          'Search for your favorite music above.',
-          style: TextStyle(color: Colors.grey),
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.library_music_rounded,
+              size: 64,
+              color: Theme.of(context)
+                  .colorScheme
+                  .primary
+                  .withValues(alpha: 0.35),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Search for your favorite music',
+              style: TextStyle(
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.5),
+                fontSize: 15,
+              ),
+            ),
+          ],
         ),
       );
     }
 
     return ListView.builder(
+      padding: const EdgeInsets.only(top: 8, bottom: 16),
       itemCount: provider.results.length,
       itemBuilder: (context, index) {
         final song = provider.results[index];
@@ -242,57 +390,91 @@ class _SongTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final playlistProvider = context.read<PlaylistProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
+    final inPlaylist = playlistProvider.contains(song.trackId);
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: ListTile(
-        leading: _AlbumArtThumbnail(url: song.artworkUrl),
-        title: Text(
-          song.trackName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          '${song.artistName} • ${song.albumName}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (song.isExplicit)
-              const Padding(
-                padding: EdgeInsets.only(right: 4),
-                child: _ExplicitBadge(),
-              ),
-            IconButton(
-              icon: Icon(
-                playlistProvider.contains(song.trackId)
-                    ? Icons.playlist_add_check
-                    : Icons.playlist_add,
-              ),
-              tooltip: playlistProvider.contains(song.trackId)
-                  ? 'In playlist'
-                  : 'Add to playlist',
-              onPressed: playlistProvider.contains(song.trackId)
-                  ? null
-                  : () {
-                      playlistProvider.addSong(song);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              '"${song.trackName}" added to playlist'),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    },
-            ),
-          ],
-        ),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => DetailsScreen(song: song),
+          MaterialPageRoute(builder: (_) => DetailsScreen(song: song)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              _AlbumArtThumbnail(url: song.artworkUrl),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      song.trackName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      song.artistName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      song.albumName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: colorScheme.onSurface.withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                children: [
+                  if (song.isExplicit) const _ExplicitBadge(),
+                  IconButton(
+                    icon: Icon(
+                      inPlaylist
+                          ? Icons.playlist_add_check_rounded
+                          : Icons.playlist_add_rounded,
+                      color: inPlaylist
+                          ? colorScheme.primary
+                          : colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                    tooltip:
+                        inPlaylist ? 'In playlist' : 'Add to playlist',
+                    onPressed: inPlaylist
+                        ? null
+                        : () {
+                            playlistProvider.addSong(song);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    '"${song.trackName}" added to playlist'),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -309,17 +491,15 @@ class _AlbumArtThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (url == null) {
-      return const _PlaceholderArt(size: 48);
-    }
+    if (url == null) return const _PlaceholderArt(size: 52);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(10),
       child: Image.network(
         url!,
-        width: 48,
-        height: 48,
+        width: 52,
+        height: 52,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const _PlaceholderArt(size: 48),
+        errorBuilder: (_, __, ___) => const _PlaceholderArt(size: 52),
       ),
     );
   }
@@ -332,11 +512,16 @@ class _PlaceholderArt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.primary;
     return Container(
       width: size,
       height: size,
-      color: Colors.grey[300],
-      child: Icon(Icons.music_note, size: size * 0.5, color: Colors.grey[600]),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(Icons.music_note_rounded,
+          size: size * 0.5, color: color.withValues(alpha: 0.5)),
     );
   }
 }
@@ -347,15 +532,19 @@ class _ExplicitBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.grey[700],
-        borderRadius: BorderRadius.circular(2),
+        color: Theme.of(context).colorScheme.error.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color:
+              Theme.of(context).colorScheme.error.withValues(alpha: 0.4),
+        ),
       ),
-      child: const Text(
+      child: Text(
         'E',
         style: TextStyle(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.error,
           fontSize: 10,
           fontWeight: FontWeight.bold,
         ),
@@ -363,3 +552,4 @@ class _ExplicitBadge extends StatelessWidget {
     );
   }
 }
+
