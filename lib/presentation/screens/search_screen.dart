@@ -216,7 +216,7 @@ class _ResultsList extends StatelessWidget {
     if (provider.results.isEmpty) {
       return const Center(
         child: Text(
-          'Search for your favourite music above.',
+          'Search for your favorite music above.',
           style: TextStyle(color: Colors.grey),
         ),
       );

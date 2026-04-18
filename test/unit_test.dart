@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:unitune/domain/entities/song.dart';
 import 'package:unitune/data/services/itunes_service.dart';
 
@@ -112,13 +115,85 @@ void main() {
     });
   });
 
-  group('ItunesService URL building', () {
-    test('_entityParam returns correct value for each SearchType', () {
-      // We test the output indirectly via searchSongs but here we verify
-      // that SearchType enum values are ordered as expected.
-      expect(SearchType.artist.index, 0);
-      expect(SearchType.album.index, 1);
-      expect(SearchType.song.index, 2);
+  group('ItunesService entity parameter', () {
+    /// Builds a minimal iTunes API response containing one track result.
+    String _fakeResponse() => jsonEncode({
+          'resultCount': 1,
+          'results': [
+            {
+              'wrapperType': 'track',
+              'trackId': 1,
+              'trackName': 'Track',
+              'artistName': 'Artist',
+              'collectionName': 'Album',
+              'trackExplicitness': 'notExplicit',
+            }
+          ]
+        });
+
+    test('uses "musicTrack" entity for SearchType.song', () async {
+      Uri? capturedUri;
+      final mockClient = MockClient((request) async {
+        capturedUri = request.url;
+        return http.Response(_fakeResponse(), 200);
+      });
+
+      final service = ItunesService(client: mockClient);
+      await service.searchSongs(query: 'test', type: SearchType.song);
+
+      expect(capturedUri?.queryParameters['entity'], 'musicTrack');
+    });
+
+    test('uses "musicArtist" entity for SearchType.artist', () async {
+      Uri? capturedUri;
+      final mockClient = MockClient((request) async {
+        capturedUri = request.url;
+        return http.Response(_fakeResponse(), 200);
+      });
+
+      final service = ItunesService(client: mockClient);
+      await service.searchSongs(query: 'test', type: SearchType.artist);
+
+      expect(capturedUri?.queryParameters['entity'], 'musicArtist');
+    });
+
+    test('uses "album" entity for SearchType.album', () async {
+      Uri? capturedUri;
+      final mockClient = MockClient((request) async {
+        capturedUri = request.url;
+        return http.Response(_fakeResponse(), 200);
+      });
+
+      final service = ItunesService(client: mockClient);
+      await service.searchSongs(query: 'test', type: SearchType.album);
+
+      expect(capturedUri?.queryParameters['entity'], 'album');
+    });
+
+    test('passes explicit=No when allowExplicit is false', () async {
+      Uri? capturedUri;
+      final mockClient = MockClient((request) async {
+        capturedUri = request.url;
+        return http.Response(_fakeResponse(), 200);
+      });
+
+      final service = ItunesService(client: mockClient);
+      await service.searchSongs(
+          query: 'test', type: SearchType.song, allowExplicit: false);
+
+      expect(capturedUri?.queryParameters['explicit'], 'No');
+    });
+
+    test('throws ItunesServiceException on non-200 status', () async {
+      final mockClient = MockClient(
+          (_) async => http.Response('Server Error', 500));
+
+      final service = ItunesService(client: mockClient);
+
+      expect(
+        () => service.searchSongs(query: 'test'),
+        throwsA(isA<ItunesServiceException>()),
+      );
     });
   });
 }
