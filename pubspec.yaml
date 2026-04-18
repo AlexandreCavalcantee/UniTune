@@ -1,0 +1,38 @@
+name: unitune
+description: UniTune - Music discovery app for university community radio using iTunes Search API.
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # HTTP for iTunes API
+  http: ^1.2.0
+
+  # SQLite for local playlists
+  sqflite: ^2.3.2
+  path: ^1.9.0
+
+  # SharedPreferences for search settings
+  shared_preferences: ^2.2.2
+
+  # State management
+  provider: ^6.1.2
+
+  # Audio playback for 30s previews
+  just_audio: ^0.9.36
+
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
