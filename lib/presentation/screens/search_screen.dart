@@ -5,7 +5,9 @@ import '../../domain/entities/song.dart';
 import '../providers/search_provider.dart';
 import '../providers/playlist_provider.dart';
 import '../providers/theme_provider.dart';
-import '../theme/app_theme.dart';
+import '../providers/now_playing_provider.dart';
+import '../widgets/app_bottom_nav.dart';
+import '../widgets/mini_player_bar.dart';
 import 'details_screen.dart';
 
 /// Main search screen.
@@ -23,6 +25,20 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final arg = ModalRoute.of(context)?.settings.arguments;
+    if (arg is String && arg.trim().isNotEmpty && _controller.text.isEmpty) {
+      _controller.text = arg.trim();
+      // Auto-search on first open with argument.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context.read<SearchProvider>().search(_controller.text);
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -35,377 +51,392 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SearchProvider>(
-      builder: (context, provider, _) {
-        return Scaffold(
-          body: Column(
-            children: [
-              _GradientHeader(
-                controller: _controller,
-                onSearch: () => _onSearch(provider),
-                provider: provider,
-              ),
-              Expanded(child: _ResultsList(provider: provider)),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-// ── Gradient header (AppBar + search + filters) ────────────────────────────
-
-class _GradientHeader extends StatelessWidget {
-  const _GradientHeader({
-    required this.controller,
-    required this.onSearch,
-    required this.provider,
-  });
-
-  final TextEditingController controller;
-  final VoidCallback onSearch;
-  final SearchProvider provider;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final gradient =
-        isDark ? AppTheme.darkHeaderGradient : AppTheme.lightHeaderGradient;
-    final topPadding = MediaQuery.of(context).padding.top;
-
-    return Container(
-      decoration: BoxDecoration(gradient: gradient),
-      child: Column(
-        children: [
-          SizedBox(height: topPadding + 8),
-          // ── Title row
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                const Icon(Icons.music_note_rounded,
-                    color: Colors.white, size: 28),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    'UniTune',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+    return Consumer<SearchProvider>(builder: (context, provider, _) {
+      final cs = Theme.of(context).colorScheme;
+      final w = MediaQuery.sizeOf(context).width;
+      final isCompact = w < 420;
+      final side = isCompact ? 14.0 : 18.0;
+      return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              floating: false,
+              backgroundColor:
+                  Theme.of(context).colorScheme.surface.withValues(alpha: 0.92),
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
+              titleSpacing: 8,
+              title: const Text(
+                'UniRadio',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontStyle: FontStyle.italic,
+                  letterSpacing: -0.5,
                 ),
-                // Theme toggle
+              ),
+              leading: IconButton(
+                tooltip: 'Menu',
+                icon: Icon(Icons.menu_rounded,
+                    color: cs.onSurface.withValues(alpha: 0.7)),
+                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Menu (placeholder)')),
+                ),
+              ),
+              actions: [
                 Consumer<ThemeProvider>(
                   builder: (_, themeProvider, __) => IconButton(
+                    tooltip:
+                        themeProvider.isDark ? 'Light mode' : 'Dark mode',
                     icon: Icon(
-                      themeProvider.isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                      color: Colors.white,
+                      themeProvider.isDark
+                          ? Icons.light_mode_rounded
+                          : Icons.dark_mode_rounded,
+                      color: cs.onSurface.withValues(alpha: 0.7),
                     ),
-                    tooltip: themeProvider.isDark ? 'Light mode' : 'Dark mode',
                     onPressed: themeProvider.toggle,
                   ),
                 ),
-                // Playlist button
                 IconButton(
-                  icon: const Icon(Icons.queue_music_rounded,
-                      color: Colors.white),
-                  tooltip: 'My Playlist',
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/playlist'),
+                  tooltip: 'Account',
+                  icon: Icon(Icons.account_circle_rounded,
+                      color: cs.onSurface.withValues(alpha: 0.7)),
+                  onPressed: () {},
                 ),
+                const SizedBox(width: 4),
               ],
             ),
-          ),
-          const SizedBox(height: 12),
-          // ── Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    textInputAction: TextInputAction.search,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Search artists, albums, songs…',
-                      hintStyle:
-                          TextStyle(color: Colors.white.withValues(alpha: 0.6)),
-                      prefixIcon: Icon(Icons.search_rounded,
-                          color: Colors.white.withValues(alpha: 0.8)),
-                      filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.18),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(side, 18, side, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Search field
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(999),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: const BorderSide(
-                            color: Colors.white, width: 1.5),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: Row(
+                        children: [
+                          Icon(Icons.search_rounded,
+                              color: cs.onSurface.withValues(alpha: 0.5)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextField(
+                              controller: _controller,
+                              textInputAction: TextInputAction.search,
+                              onSubmitted: (_) => _onSearch(provider),
+                              style: TextStyle(
+                                color: cs.onSurface,
+                                fontSize: 16,
+                              ),
+                              decoration: InputDecoration(
+                                hintText:
+                                    'Search artists, tracks, or radios...',
+                                hintStyle: TextStyle(
+                                  color: cs.onSurface.withValues(alpha: 0.3),
+                                ),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 0),
                     ),
-                    onSubmitted: (_) => onSearch(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Material(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  shape: const CircleBorder(),
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    onTap: onSearch,
-                    child: const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Icon(Icons.search_rounded,
-                          color: Colors.white, size: 22),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          // ── Filter chips + explicit switch
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                _TypeChip(
-                  label: 'Song',
-                  icon: Icons.music_note_rounded,
-                  value: SearchType.song,
-                  groupValue: provider.searchType,
-                  onSelected: provider.setSearchType,
-                ),
-                const SizedBox(width: 8),
-                _TypeChip(
-                  label: 'Artist',
-                  icon: Icons.person_rounded,
-                  value: SearchType.artist,
-                  groupValue: provider.searchType,
-                  onSelected: provider.setSearchType,
-                ),
-                const SizedBox(width: 8),
-                _TypeChip(
-                  label: 'Album',
-                  icon: Icons.album_rounded,
-                  value: SearchType.album,
-                  groupValue: provider.searchType,
-                  onSelected: provider.setSearchType,
-                ),
-                const SizedBox(width: 16),
-                // Explicit filter chip
-                FilterChip(
-                  label: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.explicit_rounded,
-                        size: 14,
-                        color: provider.allowExplicit
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.7),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Explicit',
-                        style: TextStyle(
-                          color: provider.allowExplicit
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.7),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
+                    const SizedBox(height: 14),
+
+                    // Filter bar (type radios + explicit)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: cs.outline.withValues(alpha: 0.25),
                         ),
                       ),
-                    ],
-                  ),
-                  selected: provider.allowExplicit,
-                  onSelected: provider.setAllowExplicit,
-                  selectedColor: Colors.white.withValues(alpha: 0.3),
-                  backgroundColor: Colors.white.withValues(alpha: 0.12),
-                  side: BorderSide(
-                    color: provider.allowExplicit
-                        ? Colors.white.withValues(alpha: 0.6)
-                        : Colors.white.withValues(alpha: 0.25),
-                  ),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  showCheckmark: false,
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 10,
+                                  runSpacing: 10,
+                                  children: [
+                                    _TypePill(
+                                      label: 'Music',
+                                      selected:
+                                          provider.searchType == SearchType.song,
+                                      onTap: () => provider
+                                          .setSearchType(SearchType.song),
+                                    ),
+                                    _TypePill(
+                                      label: 'Album',
+                                      selected: provider.searchType ==
+                                          SearchType.album,
+                                      onTap: () => provider
+                                          .setSearchType(SearchType.album),
+                                    ),
+                                    _TypePill(
+                                      label: 'Artist',
+                                      selected: provider.searchType ==
+                                          SearchType.artist,
+                                      onTap: () => provider
+                                          .setSearchType(SearchType.artist),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Text(
+                                'Explicit Content',
+                                style: TextStyle(
+                                  color: cs.onSurface.withValues(alpha: 0.6),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const Spacer(),
+                              Switch(
+                                value: provider.allowExplicit,
+                                onChanged: provider.setAllowExplicit,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    Text(
+                      'RECENT DISCOVERIES',
+                      style: TextStyle(
+                        color: cs.onSurface.withValues(alpha: 0.4),
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
+            _ResultsSliver(provider: provider),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(side, 22, side, 110),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'BROWSE GENRES',
+                      style: TextStyle(
+                        color: cs.onSurface.withValues(alpha: 0.4),
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const _GenresGrid(),
+                    const SizedBox(height: 18),
+                    _BottomSpacerHint(primary: cs.primary),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _onSearch(provider),
+          backgroundColor: cs.primary,
+          foregroundColor: cs.onPrimary,
+          child: const Icon(Icons.search_rounded),
+        ),
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const MiniPlayerBar(),
+            AppBottomNav(
+              currentIndex: 1,
+              onTap: (i) {
+                if (i == 1) return;
+                if (i == 0) {
+                  Navigator.popUntil(context, (r) => r.isFirst);
+                  return;
+                }
+                if (i == 2) {
+                  Navigator.pushNamed(context, '/playlist');
+                  return;
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Radio (placeholder)')),
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 
-class _TypeChip extends StatelessWidget {
-  const _TypeChip({
+class _TypePill extends StatelessWidget {
+  const _TypePill({
     required this.label,
-    required this.icon,
-    required this.value,
-    required this.groupValue,
-    required this.onSelected,
+    required this.selected,
+    required this.onTap,
   });
 
   final String label;
-  final IconData icon;
-  final SearchType value;
-  final SearchType groupValue;
-  final ValueChanged<SearchType> onSelected;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final selected = value == groupValue;
-    return FilterChip(
-      avatar: Icon(
-        icon,
-        size: 14,
-        color: selected ? Colors.white : Colors.white.withValues(alpha: 0.7),
-      ),
-      label: Text(
-        label,
-        style: TextStyle(
-          color: selected ? Colors.white : Colors.white.withValues(alpha: 0.7),
-          fontSize: 13,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+    final cs = Theme.of(context).colorScheme;
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? cs.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? cs.onPrimary : cs.onSurface.withValues(alpha: 0.6),
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.1,
+            fontSize: 12,
+          ),
         ),
       ),
-      selected: selected,
-      onSelected: (v) {
-        if (v) onSelected(value);
-      },
-      selectedColor: Colors.white.withValues(alpha: 0.3),
-      backgroundColor: Colors.white.withValues(alpha: 0.12),
-      side: BorderSide(
-        color: selected
-            ? Colors.white.withValues(alpha: 0.6)
-            : Colors.white.withValues(alpha: 0.25),
-      ),
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      showCheckmark: false,
     );
   }
 }
 
-// ── Results list ───────────────────────────────────────────────────────────
-
-class _ResultsList extends StatelessWidget {
-  const _ResultsList({required this.provider});
-
+class _ResultsSliver extends StatelessWidget {
+  const _ResultsSliver({required this.provider});
   final SearchProvider provider;
 
   @override
   Widget build(BuildContext context) {
     if (provider.isLoading) {
-      return Center(
-        child: CircularProgressIndicator(
-          color: Theme.of(context).colorScheme.primary,
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ),
       );
     }
 
     if (provider.errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline_rounded,
-                  size: 48, color: Theme.of(context).colorScheme.error),
-              const SizedBox(height: 12),
-              Text(
-                provider.errorMessage!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                    fontSize: 15),
-              ),
-            ],
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              provider.errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ),
         ),
       );
     }
 
     if (provider.results.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.library_music_rounded,
-              size: 64,
-              color: Theme.of(context)
-                  .colorScheme
-                  .primary
-                  .withValues(alpha: 0.35),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Search for your favorite music',
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              'Faça uma busca para ver resultados aqui.',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Theme.of(context)
                     .colorScheme
                     .onSurface
-                    .withValues(alpha: 0.5),
-                fontSize: 15,
+                    .withValues(alpha: 0.55),
               ),
             ),
-          ],
+          ),
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8, bottom: 16),
-      itemCount: provider.results.length,
-      itemBuilder: (context, index) {
-        final song = provider.results[index];
-        return _SongTile(song: song);
-      },
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      sliver: SliverList.separated(
+        itemCount: provider.results.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 6),
+        itemBuilder: (context, index) =>
+            _SongRow(song: provider.results[index]),
+      ),
     );
   }
 }
 
 // ── Song tile ──────────────────────────────────────────────────────────────
 
-class _SongTile extends StatelessWidget {
-  const _SongTile({required this.song});
+class _SongRow extends StatelessWidget {
+  const _SongRow({required this.song});
 
   final Song song;
 
   @override
   Widget build(BuildContext context) {
     final playlistProvider = context.read<PlaylistProvider>();
+    final nowPlaying = context.read<NowPlayingProvider>();
     final colorScheme = Theme.of(context).colorScheme;
     final inPlaylist = playlistProvider.contains(song.trackId);
+    // Duration isn't present in the current Song entity; keep layout minimal.
+    final String? durationText = null;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => DetailsScreen(song: song)),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+          ),
           child: Row(
             children: [
-              _AlbumArtThumbnail(url: song.artworkUrl),
+              InkWell(
+                onTap: () => nowPlaying.playPreview(song),
+                borderRadius: BorderRadius.circular(10),
+                child: _ArtWithPlay(url: song.artworkUrl),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -416,8 +447,8 @@ class _SongTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        fontSize: 14,
                         color: colorScheme.onSurface,
                       ),
                     ),
@@ -427,53 +458,49 @@ class _SongTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      song.albumName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: colorScheme.onSurface.withValues(alpha: 0.4),
+                        fontSize: 13,
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              Column(
-                children: [
-                  if (song.isExplicit) const _ExplicitBadge(),
-                  IconButton(
-                    icon: Icon(
-                      inPlaylist
-                          ? Icons.playlist_add_check_rounded
-                          : Icons.playlist_add_rounded,
-                      color: inPlaylist
-                          ? colorScheme.primary
-                          : colorScheme.onSurface.withValues(alpha: 0.5),
-                    ),
-                    tooltip:
-                        inPlaylist ? 'In playlist' : 'Add to playlist',
-                    onPressed: inPlaylist
-                        ? null
-                        : () {
-                            playlistProvider.addSong(song);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    '"${song.trackName}" added to playlist'),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          },
+              const SizedBox(width: 10),
+              if (durationText != null)
+                Text(
+                  durationText,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurface.withValues(alpha: 0.3),
+                    fontWeight: FontWeight.w600,
                   ),
-                ],
+                ),
+              const SizedBox(width: 6),
+              IconButton(
+                tooltip: inPlaylist ? 'In playlist' : 'Add to playlist',
+                icon: Icon(
+                  inPlaylist
+                      ? Icons.playlist_add_check_rounded
+                      : Icons.playlist_add_rounded,
+                  color: inPlaylist
+                      ? colorScheme.primary
+                      : colorScheme.onSurface.withValues(alpha: 0.35),
+                ),
+                onPressed: inPlaylist
+                    ? null
+                    : () {
+                        playlistProvider.addSong(song);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                '"${song.trackName}" adicionada na playlist'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
               ),
+              Icon(Icons.more_vert_rounded,
+                  color: colorScheme.onSurface.withValues(alpha: 0.3)),
             ],
           ),
         ),
@@ -482,74 +509,136 @@ class _SongTile extends StatelessWidget {
   }
 }
 
-// ── Small widgets ──────────────────────────────────────────────────────────
-
-class _AlbumArtThumbnail extends StatelessWidget {
-  const _AlbumArtThumbnail({this.url});
-
+class _ArtWithPlay extends StatelessWidget {
+  const _ArtWithPlay({this.url});
   final String? url;
 
   @override
   Widget build(BuildContext context) {
-    if (url == null) return const _PlaceholderArt(size: 52);
+    final cs = Theme.of(context).colorScheme;
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
-      child: Image.network(
-        url!,
-        width: 52,
-        height: 52,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const _PlaceholderArt(size: 52),
+      child: Stack(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: url == null
+                ? Icon(Icons.album_rounded,
+                    color: cs.onSurface.withValues(alpha: 0.35), size: 28)
+                : Image.network(
+                    url!,
+                    width: 64,
+                    height: 64,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Icon(Icons.album_rounded,
+                        color: cs.onSurface.withValues(alpha: 0.35), size: 28),
+                  ),
+          ),
+          Positioned.fill(
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 120),
+              opacity: 0.0,
+              child: Container(color: Colors.black.withValues(alpha: 0.35)),
+            ),
+          ),
+          Positioned(
+            right: 6,
+            bottom: 6,
+            child: Icon(Icons.play_circle_fill_rounded,
+                color: cs.primary, size: 22),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _PlaceholderArt extends StatelessWidget {
-  const _PlaceholderArt({required this.size});
+class _GenresGrid extends StatelessWidget {
+  const _GenresGrid();
 
-  final double size;
+  static const _genres = [
+    'Electronic',
+    'Ambient',
+    'Synthwave',
+    'Rock',
+    'Hip-Hop',
+    'Jazz',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(10),
+    final cs = Theme.of(context).colorScheme;
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisExtent: 92,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
       ),
-      child: Icon(Icons.music_note_rounded,
-          size: size * 0.5, color: color.withValues(alpha: 0.5)),
+      itemCount: _genres.length,
+      itemBuilder: (context, i) {
+        final g = _genres[i];
+        return InkWell(
+          onTap: () => Navigator.pushNamed(context, '/search', arguments: g),
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: cs.outline.withValues(alpha: 0.25)),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  cs.primary.withValues(alpha: 0.10),
+                  Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest
+                      .withValues(alpha: 0.55),
+                ],
+              ),
+            ),
+            padding: const EdgeInsets.all(14),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Text(
+                g,
+                style: TextStyle(
+                  color: cs.onSurface,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
-class _ExplicitBadge extends StatelessWidget {
-  const _ExplicitBadge();
+class _BottomSpacerHint extends StatelessWidget {
+  const _BottomSpacerHint({required this.primary});
+  final Color primary;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.error.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color:
-              Theme.of(context).colorScheme.error.withValues(alpha: 0.4),
-        ),
+        color: primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: primary.withValues(alpha: 0.18)),
       ),
       child: Text(
-        'E',
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.error,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-        ),
+        'Dica: toque em um resultado para ver detalhes e ouvir o preview de 30s.',
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       ),
     );
   }
 }
+
 

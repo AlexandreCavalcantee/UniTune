@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'presentation/providers/search_provider.dart';
 import 'presentation/providers/playlist_provider.dart';
 import 'presentation/providers/theme_provider.dart';
+import 'presentation/providers/now_playing_provider.dart';
+import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/search_screen.dart';
 import 'presentation/screens/playlist_screen.dart';
 import 'presentation/theme/app_theme.dart';
@@ -21,6 +23,7 @@ class UniTuneApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => PlaylistProvider()),
+        ChangeNotifierProvider(create: (_) => NowPlayingProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
@@ -32,7 +35,8 @@ class UniTuneApp extends StatelessWidget {
             themeMode: themeProvider.mode,
             initialRoute: '/',
             routes: {
-              '/': (_) => const SearchScreen(),
+              '/': (_) => const HomeScreen(),
+              '/search': (_) => const SearchScreen(),
               '/playlist': (_) => const PlaylistScreen(),
             },
           );

@@ -13,6 +13,7 @@ android/captures/
 android/gradlew
 android/gradlew.bat
 android/local.properties
+android/gradle.properties
 android/GeneratedPluginRegistrant.java
 android/app/debug
 android/app/profile

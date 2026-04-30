@@ -2,30 +2,31 @@ import 'package:flutter/material.dart';
 
 /// Centralised theme definitions for UniTune.
 ///
-/// Provides a modern look with a purple/violet primary palette,
-/// coral/pink accents, and fully-specified light and dark schemes.
+/// Provides a modern dark-forward look with a deep charcoal surface and
+/// vibrant green accents (action/play), matching the project brief.
 abstract class AppTheme {
   // ── Brand colours ──────────────────────────────────────────────────────────
-  static const Color primaryLight = Color(0xFF6C63FF);   // violet
-  static const Color primaryDark  = Color(0xFF9D97FF);   // soft violet
+  // Purple accent (matches the provided HTML references).
+  static const Color primaryLight = Color(0xFFB76DFF);
+  static const Color primaryDark = Color(0xFFDDB7FF);
 
-  static const Color secondaryLight = Color(0xFFFF6584); // coral/pink
-  static const Color secondaryDark  = Color(0xFFFF8FA3); // soft coral
+  static const Color secondaryLight = Color(0xFFBDBDBD); // neutral
+  static const Color secondaryDark = Color(0xFFE0E0E0); // neutral
 
-  static const Color accentLight = Color(0xFF43CEA2);    // teal
-  static const Color accentDark  = Color(0xFF6EEFC2);    // soft teal
+  static const Color accentLight = Color(0xFF64FFDA); // mint
+  static const Color accentDark = Color(0xFF1DE9B6); // mint
 
   // ── Gradient helpers ───────────────────────────────────────────────────────
   static const LinearGradient lightHeaderGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF6C63FF), Color(0xFF43CEA2)],
+    colors: [Color(0xFF0B0B0D), Color(0xFFB76DFF)],
   );
 
   static const LinearGradient darkHeaderGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF312E81), Color(0xFF0F4C75)],
+    colors: [Color(0xFF000000), Color(0xFF2C0051)],
   );
 
   // ── Light theme ────────────────────────────────────────────────────────────
@@ -34,26 +35,26 @@ abstract class AppTheme {
       brightness: Brightness.light,
       primary: primaryLight,
       onPrimary: Colors.white,
-      primaryContainer: Color(0xFFEDE9FE),
-      onPrimaryContainer: Color(0xFF3730A3),
+      primaryContainer: Color(0xFFF0DBFF),
+      onPrimaryContainer: Color(0xFF2C0051),
       secondary: secondaryLight,
-      onSecondary: Colors.white,
-      secondaryContainer: Color(0xFFFFE4E6),
-      onSecondaryContainer: Color(0xFF9F1239),
+      onSecondary: Color(0xFF111114),
+      secondaryContainer: Color(0xFFF2F2F4),
+      onSecondaryContainer: Color(0xFF1A1A1E),
       tertiary: accentLight,
-      onTertiary: Colors.white,
+      onTertiary: Color(0xFF2C0051),
       error: Color(0xFFDC2626),
       onError: Colors.white,
-      surface: Color(0xFFF8F7FF),
-      onSurface: Color(0xFF1E1B4B),
-      surfaceContainerHighest: Color(0xFFEDE9FE),
-      outline: Color(0xFFCBC9E2),
+      surface: Color(0xFFF7F7F8),
+      onSurface: Color(0xFF111114),
+      surfaceContainerHighest: Color(0xFFEFEFF2),
+      outline: Color(0xFFB8B8C2),
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: cs,
-      scaffoldBackgroundColor: const Color(0xFFF5F4FF),
+      scaffoldBackgroundColor: const Color(0xFFF6F6F7),
       fontFamily: 'Roboto',
       appBarTheme: AppBarTheme(
         elevation: 0,
@@ -68,7 +69,7 @@ abstract class AppTheme {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 2,
         shadowColor: primaryLight.withValues(alpha: 0.15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -103,7 +104,7 @@ abstract class AppTheme {
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: const Color(0xFFEDE9FE),
+        backgroundColor: const Color(0xFFEFEFF2),
         selectedColor: primaryLight,
         labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
         side: BorderSide.none,
@@ -141,27 +142,27 @@ abstract class AppTheme {
     const cs = ColorScheme(
       brightness: Brightness.dark,
       primary: primaryDark,
-      onPrimary: Color(0xFF1E1B4B),
-      primaryContainer: Color(0xFF312E81),
-      onPrimaryContainer: Color(0xFFEDE9FE),
+      onPrimary: Color(0xFF2C0051),
+      primaryContainer: Color(0xFFB76DFF),
+      onPrimaryContainer: Color(0xFF2C0051),
       secondary: secondaryDark,
-      onSecondary: Color(0xFF4C0519),
-      secondaryContainer: Color(0xFF881337),
-      onSecondaryContainer: Color(0xFFFFE4E6),
+      onSecondary: Color(0xFF111114),
+      secondaryContainer: Color(0xFF2A2A2D),
+      onSecondaryContainer: Color(0xFFE4E1E6),
       tertiary: accentDark,
-      onTertiary: Color(0xFF064E3B),
+      onTertiary: Color(0xFF2C0051),
       error: Color(0xFFFCA5A5),
       onError: Color(0xFF7F1D1D),
-      surface: Color(0xFF1A1625),
-      onSurface: Color(0xFFE2E0FF),
-      surfaceContainerHighest: Color(0xFF2D2B45),
-      outline: Color(0xFF4C4970),
+      surface: Color(0xFF131316),
+      onSurface: Color(0xFFE4E1E6),
+      surfaceContainerHighest: Color(0xFF1F1F22),
+      outline: Color(0xFF4D4354),
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: cs,
-      scaffoldBackgroundColor: const Color(0xFF120F1E),
+      scaffoldBackgroundColor: const Color(0xFF000000),
       fontFamily: 'Roboto',
       appBarTheme: const AppBarTheme(
         elevation: 0,
@@ -176,22 +177,22 @@ abstract class AppTheme {
         ),
         iconTheme: IconThemeData(color: Colors.white),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 4,
         shadowColor: Colors.black45,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: const Color(0xFF1E1B2E),
+        color: const Color(0xFF1F1F22),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFF2D2B45),
+        fillColor: const Color(0xFF1F1F22),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Color(0xFF4C4970)),
+          borderSide: const BorderSide(color: Color(0xFF4D4354)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
