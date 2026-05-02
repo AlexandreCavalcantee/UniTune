@@ -80,6 +80,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
     super.dispose();
   }
 
+  double get artSize => MediaQuery.of(context).size.width * 0.6;
+
   @override
   Widget build(BuildContext context) {
     final playlistProvider = context.watch<PlaylistProvider>();
@@ -173,19 +175,24 @@ class _DetailsScreenState extends State<DetailsScreen> {
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
+              collapseMode: CollapseMode.parallax,
               background: Container(
                 decoration: BoxDecoration(gradient: gradient),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    SizedBox(height: topPadding + 56),
-                    // Album art
-                    Hero(
-                      tag: 'artwork_${widget.song.trackId}',
-                      child: _AlbumArt(url: widget.song.artworkUrl),
+                child: SafeArea(
+                  bottom: false,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Hero(
+                        tag: 'artwork_${widget.song.trackId}',
+                        child: _AlbumArt(
+                          url: widget.song.artworkUrl,
+                          size: artSize,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -336,13 +343,13 @@ class _InfoChip extends StatelessWidget {
 // ── Album art ──────────────────────────────────────────────────────────────
 
 class _AlbumArt extends StatelessWidget {
-  const _AlbumArt({this.url});
+  const _AlbumArt({this.url, required this.size});
 
   final String? url;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size.width * 0.52;
     final colorScheme = Theme.of(context).colorScheme;
     if (url == null) {
       return Container(
@@ -350,37 +357,42 @@ class _AlbumArt extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Icon(Icons.album_rounded,
             size: size * 0.4, color: Colors.white.withValues(alpha: 0.6)),
       );
     }
     return Container(
+      width: size,
+      height: size,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
+            color: Colors.black.withValues(alpha: 0.25),
             blurRadius: 24,
             offset: const Offset(0, 10),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Image.network(
-          url!,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
+        borderRadius: BorderRadius.circular(24),
+        child: DecoratedBox(
+          decoration: BoxDecoration(color: colorScheme.surfaceContainerHighest),
+          child: Image.network(
+            url!,
             width: size,
             height: size,
-            color: colorScheme.surfaceContainerHighest,
-            child: Icon(Icons.album_rounded,
-                size: size * 0.4,
-                color: colorScheme.onSurface.withValues(alpha: 0.4)),
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => Container(
+              width: size,
+              height: size,
+              color: colorScheme.surfaceContainerHighest,
+              child: Icon(Icons.album_rounded,
+                  size: size * 0.4,
+                  color: colorScheme.onSurface.withValues(alpha: 0.4)),
+            ),
           ),
         ),
       ),

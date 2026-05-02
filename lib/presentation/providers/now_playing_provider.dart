@@ -65,13 +65,18 @@ class NowPlayingProvider extends ChangeNotifier {
 
     try {
       await _player.setUrl(song.previewUrl!);
-      await _player.play();
     } catch (_) {
       _error = 'Não foi possível reproduzir o preview.';
+      return;
     } finally {
       _loading = false;
       notifyListeners();
     }
+
+    _player.play().catchError((_) {
+      _error = 'Não foi possível reproduzir o preview.';
+      notifyListeners();
+    });
   }
 
   Future<void> pause() => _player.pause();
