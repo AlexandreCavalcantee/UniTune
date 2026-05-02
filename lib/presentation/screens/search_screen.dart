@@ -81,7 +81,7 @@ class _SearchScreenState extends State<SearchScreen> {
               elevation: 0,
               titleSpacing: 8,
               title: const Text(
-                'UniRadio',
+                'UniTune',
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
                   fontStyle: FontStyle.italic,
@@ -179,39 +179,6 @@ class _SearchScreenState extends State<SearchScreen> {
                       padding: const EdgeInsets.all(12),
                       child: Column(
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Wrap(
-                                  spacing: 10,
-                                  runSpacing: 10,
-                                  children: [
-                                    _TypePill(
-                                      label: 'Music',
-                                      selected:
-                                          provider.searchType == SearchType.song,
-                                      onTap: () => provider
-                                          .setSearchType(SearchType.song),
-                                    ),
-                                    _TypePill(
-                                      label: 'Album',
-                                      selected: provider.searchType ==
-                                          SearchType.album,
-                                      onTap: () => provider
-                                          .setSearchType(SearchType.album),
-                                    ),
-                                    _TypePill(
-                                      label: 'Artist',
-                                      selected: provider.searchType ==
-                                          SearchType.artist,
-                                      onTap: () => provider
-                                          .setSearchType(SearchType.artist),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
                           const SizedBox(height: 12),
                           Row(
                             children: [
@@ -307,44 +274,6 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       );
     });
-  }
-}
-
-class _TypePill extends StatelessWidget {
-  const _TypePill({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return InkWell(
-      borderRadius: BorderRadius.circular(999),
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? cs.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? cs.onPrimary : cs.onSurface.withValues(alpha: 0.6),
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.1,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
   }
 }
 

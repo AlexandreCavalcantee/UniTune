@@ -35,7 +35,7 @@ class PlaylistScreen extends StatelessWidget {
                   ),
                 ),
                 title: const Text(
-                  'UniRadio',
+                  'UniTune',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -89,8 +89,6 @@ class PlaylistScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const _LibraryChips(),
-                      const SizedBox(height: 18),
                       _RecentsHeader(onToggleView: () {}),
                       const SizedBox(height: 12),
                       _RecentsGrid(provider: provider),
@@ -137,92 +135,6 @@ class PlaylistScreen extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _LibraryChips extends StatefulWidget {
-  const _LibraryChips();
-
-  @override
-  State<_LibraryChips> createState() => _LibraryChipsState();
-}
-
-class _LibraryChipsState extends State<_LibraryChips> {
-  int _selected = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return SizedBox(
-      height: 40,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          _Chip(
-            label: 'Playlists',
-            selected: _selected == 0,
-            onTap: () => setState(() => _selected = 0),
-            primary: cs.primary,
-          ),
-          const SizedBox(width: 10),
-          _Chip(
-            label: 'Artistas',
-            selected: _selected == 1,
-            onTap: () => setState(() => _selected = 1),
-            primary: cs.primary,
-          ),
-          const SizedBox(width: 10),
-          _Chip(
-            label: 'Baixado',
-            selected: _selected == 2,
-            onTap: () => setState(() => _selected = 2),
-            primary: cs.primary,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Chip extends StatelessWidget {
-  const _Chip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    required this.primary,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  final Color primary;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? primary : const Color(0xFF2A2A2D),
-          border: Border.all(
-            color: selected ? primary : const Color(0xFF27272A),
-          ),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: selected ? Colors.black : Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
-              letterSpacing: 0.6,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

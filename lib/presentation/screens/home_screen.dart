@@ -133,7 +133,7 @@ class _TopBar extends StatelessWidget {
           const SizedBox(width: 10),
           const Expanded(
             child: Text(
-              'UniRadio',
+              'UniTune',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -282,69 +282,6 @@ class _HomeBody extends StatelessWidget {
           ),
 
           const SizedBox(height: 34),
-
-          // Recent Stations (bento grid)
-          const Text(
-            'Recent Stations',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, c) {
-              final w = c.maxWidth;
-              final gap = 16.0;
-              final half = (w - gap) / 2;
-              return Column(
-                children: [
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: half,
-                        height: half,
-                        child: _StationTile.large(
-                          title: 'Techno Core',
-                          subtitle: 'Live from Berlin',
-                          leading: Icons.settings_input_antenna_rounded,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      SizedBox(
-                        width: half,
-                        height: half,
-                        child: Column(
-                          children: const [
-                            Expanded(
-                              child: _StationTile.small(
-                                title: 'Electronica',
-                                leading: Icons.bolt_rounded,
-                              ),
-                            ),
-                            SizedBox(height: 16),
-                            Expanded(
-                              child: _StationTile.small(
-                                title: 'Ambient',
-                                leading: Icons.waves_rounded,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const _StationTile.wide(
-                    title: 'Radio Flux',
-                    subtitle: '42.5k listeners',
-                    leading: Icons.graphic_eq_rounded,
-                  ),
-                ],
-              );
-            },
-          ),
 
           const SizedBox(height: 34),
 
