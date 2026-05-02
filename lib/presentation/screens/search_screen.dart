@@ -25,6 +25,17 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    if (!mounted) return;
+    context.read<SearchProvider>().setSearchActive(_controller.text.isNotEmpty);
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final arg = ModalRoute.of(context)?.settings.arguments;
@@ -40,6 +51,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   void dispose() {
+    _controller.removeListener(_onTextChanged);
     _controller.dispose();
     super.dispose();
   }
@@ -223,7 +235,9 @@ class _SearchScreenState extends State<SearchScreen> {
                     const SizedBox(height: 18),
 
                     Text(
-                      'RECENT DISCOVERIES',
+                      provider.isSearchActive
+                          ? 'RESULTS'
+                          : 'RECENT DISCOVERIES',
                       style: TextStyle(
                         color: cs.onSurface.withValues(alpha: 0.4),
                         letterSpacing: 2,
@@ -340,6 +354,40 @@ class _ResultsSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ── History mode (search field empty) ───────────────────────────────────
+    if (!provider.isSearchActive) {
+      if (provider.recentHistory.isEmpty) {
+        return SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'Faça uma busca para ver resultados aqui.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.55),
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+      return SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        sliver: SliverList.separated(
+          itemCount: provider.recentHistory.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 6),
+          itemBuilder: (context, index) =>
+              _SongRow(song: provider.recentHistory[index]),
+        ),
+      );
+    }
+
+    // ── Search mode (search field has text) ─────────────────────────────────
     if (provider.isLoading) {
       return SliverFillRemaining(
         hasScrollBody: false,
@@ -374,7 +422,7 @@ class _ResultsSliver extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              'Faça uma busca para ver resultados aqui.',
+              'Pressione buscar para ver resultados.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Theme.of(context)
@@ -420,10 +468,13 @@ class _SongRow extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => DetailsScreen(song: song)),
-        ),
+        onTap: () {
+          context.read<SearchProvider>().addToHistory(song);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => DetailsScreen(song: song)),
+          );
+        },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           decoration: BoxDecoration(
@@ -433,7 +484,10 @@ class _SongRow extends StatelessWidget {
           child: Row(
             children: [
               InkWell(
-                onTap: () => nowPlaying.playPreview(song),
+                onTap: () {
+                  context.read<SearchProvider>().addToHistory(song);
+                  nowPlaying.playPreview(song);
+                },
                 borderRadius: BorderRadius.circular(10),
                 child: _ArtWithPlay(url: song.artworkUrl),
               ),

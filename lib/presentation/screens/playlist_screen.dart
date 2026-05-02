@@ -275,13 +275,7 @@ class _RecentsGrid extends StatelessWidget {
     }.toList()
       ..sort();
 
-    final cards = <Widget>[
-      _LikedSongsCard(
-        count: songs.length,
-        primary: cs.primary,
-        onTap: () {},
-      ),
-    ];
+    final cards = <Widget>[];
 
     for (final s in songs.take(3)) {
       cards.add(_SquareMediaCard(
@@ -315,70 +309,6 @@ class _RecentsGrid extends StatelessWidget {
   }
 }
 
-class _LikedSongsCard extends StatelessWidget {
-  const _LikedSongsCard({
-    required this.count,
-    required this.primary,
-    required this.onTap,
-  });
-
-  final int count;
-  final Color primary;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    primary.withValues(alpha: 0.25),
-                    primary.withValues(alpha: 0.75),
-                    const Color(0xFF111114),
-                  ],
-                ),
-              ),
-              child: const Center(
-                child: Icon(Icons.favorite_rounded,
-                    color: Colors.white, size: 64),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Músicas Curtidas',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            'Playlist • $count música${count == 1 ? '' : 's'}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.45),
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _SquareMediaCard extends StatelessWidget {
   const _SquareMediaCard({

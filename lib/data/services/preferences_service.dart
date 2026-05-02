@@ -1,13 +1,17 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'itunes_service.dart';
+import '../../domain/entities/song.dart';
 
 /// Keys used in [SharedPreferences].
 class _Keys {
   static const String searchType = 'search_type';
   static const String allowExplicit = 'allow_explicit';
+  static const String recentHistory = 'recent_history';
+  static const String playlist = 'playlist';
 }
 
-/// Service that persists and retrieves user search preferences.
+/// Service that persists and retrieves user preferences.
 class PreferencesService {
   SharedPreferences? _prefs;
 
@@ -39,5 +43,37 @@ class PreferencesService {
   Future<bool> loadAllowExplicit() async {
     final prefs = await _preferences;
     return prefs.getBool(_Keys.allowExplicit) ?? true;
+  }
+
+  /// Persists the recent history list (works on all platforms including web).
+  Future<void> saveRecentHistory(List<Song> songs) async {
+    final prefs = await _preferences;
+    final encoded = songs.map((s) => jsonEncode(s.toMap())).toList();
+    await prefs.setStringList(_Keys.recentHistory, encoded);
+  }
+
+  /// Loads the persisted recent history. Returns an empty list if none.
+  Future<List<Song>> loadRecentHistory() async {
+    final prefs = await _preferences;
+    final raw = prefs.getStringList(_Keys.recentHistory) ?? [];
+    return raw
+        .map((s) => Song.fromMap(jsonDecode(s) as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Persists the full playlist list.
+  Future<void> savePlaylist(List<Song> songs) async {
+    final prefs = await _preferences;
+    final encoded = songs.map((s) => jsonEncode(s.toMap())).toList();
+    await prefs.setStringList(_Keys.playlist, encoded);
+  }
+
+  /// Loads the persisted playlist. Returns an empty list if none.
+  Future<List<Song>> loadPlaylist() async {
+    final prefs = await _preferences;
+    final raw = prefs.getStringList(_Keys.playlist) ?? [];
+    return raw
+        .map((s) => Song.fromMap(jsonDecode(s) as Map<String, dynamic>))
+        .toList();
   }
 }
