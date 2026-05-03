@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../domain/entities/song.dart';
+import '../../domain/entities/album.dart';
 import '../../domain/entities/artist.dart';
 
 /// Search type used when querying the iTunes Search API.
@@ -47,6 +48,64 @@ class ItunesService {
         .where((r) => r['wrapperType'] == 'track')
         .map(Song.fromItunesJson)
         .where((s) => allowExplicit || !s.isExplicit)
+        .toList();
+  }
+
+  /// Searches and returns a list of albums.
+  Future<List<Album>> searchAlbums({
+    required String query,
+    int limit = 20,
+  }) async {
+    final uri = Uri.parse(_baseUrl).replace(queryParameters: {
+      'term': query,
+      'entity': 'album',
+      'limit': limit.toString(),
+    });
+
+    final response = await _client.get(uri);
+    if (response.statusCode != 200) {
+      throw ItunesServiceException(
+        'iTunes API returned status ${response.statusCode}',
+      );
+    }
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    final results = body['results'] as List<dynamic>? ?? [];
+
+    return results
+        .whereType<Map<String, dynamic>>()
+        .where((r) => r['wrapperType'] == 'collection')
+        .where((r) => r['collectionType'] == 'Album')
+        .map(Album.fromItunesJson)
+        .toList();
+  }
+
+  /// Fetches all songs in the specified album by collection id.
+  Future<List<Song>> fetchAlbumTracks({
+    required String collectionId,
+  }) async {
+    final uri = Uri.parse('https://itunes.apple.com/lookup').replace(
+      queryParameters: {
+        'id': collectionId,
+        'entity': 'song',
+        'limit': '200',
+      },
+    );
+
+    final response = await _client.get(uri);
+    if (response.statusCode != 200) {
+      throw ItunesServiceException(
+        'iTunes API returned status ${response.statusCode}',
+      );
+    }
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    final results = body['results'] as List<dynamic>? ?? [];
+
+    return results
+        .whereType<Map<String, dynamic>>()
+        .where((r) => r['wrapperType'] == 'track')
+        .map(Song.fromItunesJson)
         .toList();
   }
 

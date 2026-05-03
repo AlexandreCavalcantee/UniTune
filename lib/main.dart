@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'presentation/providers/search_provider.dart';
 import 'presentation/providers/playlist_provider.dart';
+import 'presentation/providers/recommendation_provider.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/providers/now_playing_provider.dart';
 import 'presentation/screens/home_screen.dart';
@@ -23,6 +24,14 @@ class UniTuneApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => PlaylistProvider()),
+        ChangeNotifierProxyProvider<PlaylistProvider, RecommendationProvider>(
+          create: (_) => RecommendationProvider(),
+          update: (_, playlist, recommendation) {
+            recommendation ??= RecommendationProvider();
+            recommendation.attachPlaylist(playlist);
+            return recommendation;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => NowPlayingProvider()),
       ],
       child: Consumer<ThemeProvider>(

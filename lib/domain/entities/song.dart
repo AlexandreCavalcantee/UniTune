@@ -8,6 +8,7 @@ class Song {
   final String? artworkUrl;
   final String? previewUrl;
   final String? genre;
+  final double? trackPrice;
   final bool isExplicit;
   final bool suggestToRadio;
 
@@ -20,6 +21,7 @@ class Song {
     this.artworkUrl,
     this.previewUrl,
     this.genre,
+    this.trackPrice,
     this.isExplicit = false,
     this.suggestToRadio = false,
   });
@@ -37,6 +39,7 @@ class Song {
       ),
       previewUrl: json['previewUrl'] as String?,
       genre: json['primaryGenreName'] as String?,
+      trackPrice: (json['trackPrice'] as num?)?.toDouble(),
       isExplicit: json['trackExplicitness'] == 'explicit',
     );
   }
@@ -52,6 +55,7 @@ class Song {
       artworkUrl: map['artwork_url'] as String?,
       previewUrl: map['preview_url'] as String?,
       genre: map['genre'] as String?,
+      trackPrice: (map['track_price'] as num?)?.toDouble(),
       isExplicit: (map['is_explicit'] as int? ?? 0) == 1,
       suggestToRadio: (map['suggest_to_radio'] as int? ?? 0) == 1,
     );
@@ -68,6 +72,7 @@ class Song {
       'artwork_url': artworkUrl,
       'preview_url': previewUrl,
       'genre': genre,
+      'track_price': trackPrice,
       'is_explicit': isExplicit ? 1 : 0,
       'suggest_to_radio': suggestToRadio ? 1 : 0,
     };
@@ -82,6 +87,7 @@ class Song {
     String? artworkUrl,
     String? previewUrl,
     String? genre,
+    double? trackPrice,
     bool? isExplicit,
     bool? suggestToRadio,
   }) {
@@ -94,6 +100,7 @@ class Song {
       artworkUrl: artworkUrl ?? this.artworkUrl,
       previewUrl: previewUrl ?? this.previewUrl,
       genre: genre ?? this.genre,
+      trackPrice: trackPrice ?? this.trackPrice,
       isExplicit: isExplicit ?? this.isExplicit,
       suggestToRadio: suggestToRadio ?? this.suggestToRadio,
     );

@@ -53,10 +53,6 @@ class AppBottomNav extends StatelessWidget {
             icon: Icon(Icons.library_music_rounded),
             label: 'LIBRARY',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_input_antenna_rounded),
-            label: 'RADIO',
-          ),
         ],
       ),
     );

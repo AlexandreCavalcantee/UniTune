@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../domain/entities/album.dart';
 import '../../domain/entities/song.dart';
 import '../providers/playlist_provider.dart';
+import '../providers/recommendation_provider.dart';
 import '../providers/theme_provider.dart';
+import '../screens/album_details_screen.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/mini_player_bar.dart';
 
@@ -41,7 +44,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             _TopBar(
-              onAvatarTap: () {},
               onToggleTheme: context.read<ThemeProvider>().toggle,
             ),
             Expanded(
@@ -61,11 +63,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Library',
                     subtitle: 'Open your saved playlist.',
                     icon: Icons.library_music_rounded,
-                  ),
-                  const _PlaceholderTab(
-                    title: 'Broadcast',
-                    subtitle: 'Suggestions for the radio live here.',
-                    icon: Icons.settings_input_antenna_rounded,
                   ),
                 ],
               ),
@@ -108,11 +105,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _TopBar extends StatelessWidget {
   const _TopBar({
-    required this.onAvatarTap,
     required this.onToggleTheme,
   });
 
-  final VoidCallback onAvatarTap;
   final VoidCallback onToggleTheme;
 
   @override
@@ -154,21 +149,6 @@ class _TopBar extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          const SizedBox(width: 4),
-          InkWell(
-            onTap: onAvatarTap,
-            borderRadius: BorderRadius.circular(999),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: cs.primary, width: 2),
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
-              child: const Icon(Icons.person_rounded, color: Colors.white),
-            ),
-          ),
         ],
       ),
     );
@@ -188,7 +168,10 @@ class _HomeBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final playlist = context.watch<PlaylistProvider>().songs;
-    final horizontal = playlist.take(10).toList(growable: false);
+    final recommendation = context.watch<RecommendationProvider>();
+    final recommendedAlbums = recommendation.albums;
+    final isLoadingAlbums = recommendation.isLoading;
+    final recommendedError = recommendation.errorMessage;
     final w = MediaQuery.sizeOf(context).width;
     final isCompact = w < 420;
     final side = isCompact ? 14.0 : 18.0;
@@ -238,47 +221,56 @@ class _HomeBody extends StatelessWidget {
 
           const SizedBox(height: 26),
 
-          // Recommended for Today
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  'Recommended for Today',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () {},
-                child: Text(
-                  'SEE ALL',
-                  style: TextStyle(
-                    color: cs.primary,
-                    letterSpacing: 2,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 11,
-                  ),
-                ),
-              ),
-            ],
+          // Recommended Albums
+          const Text(
+            'Recommended for Today',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 12),
           SizedBox(
             height: 290,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: horizontal.isEmpty ? 3 : horizontal.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 16),
-              itemBuilder: (context, i) {
-                final song = horizontal.isEmpty
-                    ? null
-                    : horizontal[i];
-                return _TrackCard(song: song, width: clampedCardWidth);
-              },
-            ),
+            child: isLoadingAlbums
+                ? Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation(cs.primary),
+                    ),
+                  )
+                : recommendedAlbums.isEmpty
+                    ? Center(
+                        child: Text(
+                          recommendedError ??
+                              'Adicione músicas para ver álbuns recomendados.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: recommendedAlbums.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 16),
+                        itemBuilder: (context, i) {
+                          return _AlbumCard(
+                            album: recommendedAlbums[i],
+                            width: clampedCardWidth,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => AlbumDetailsScreen(
+                                    album: recommendedAlbums[i],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
           ),
 
           const SizedBox(height: 34),
@@ -302,22 +294,31 @@ class _HomeBody extends StatelessWidget {
   }
 }
 
-class _TrackCard extends StatelessWidget {
-  const _TrackCard({required this.song, required this.width});
-  final Song? song;
+class _AlbumCard extends StatelessWidget {
+  const _AlbumCard({
+    required this.album,
+    required this.width,
+    this.onTap,
+  });
+  final Album? album;
   final double width;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final title = song?.trackName ?? 'Neon Echoes';
-    final subtitle = song?.artistName ?? 'Sonic Architect';
-    final art = song?.artworkUrl;
+    final title = album?.collectionName ?? 'Discover albums';
+    final subtitle = album?.artistName ?? 'Save songs to see recommendations';
+    final genre = album?.primaryGenreName;
+    final art = album?.artworkUrl;
 
     return SizedBox(
       width: width,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Stack(
@@ -329,12 +330,14 @@ class _TrackCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(0),
                   ),
                   clipBehavior: Clip.hardEdge,
-                  child: art == null
+                  child: art == null || art.isEmpty
                       ? Container(
                           alignment: Alignment.center,
-                          child: Icon(Icons.album_rounded,
-                              color: Colors.white.withValues(alpha: 0.4),
-                              size: 56),
+                          child: Icon(
+                            Icons.album_rounded,
+                            color: Colors.white.withValues(alpha: 0.4),
+                            size: 56,
+                          ),
                         )
                       : Image.network(
                           art,
@@ -343,9 +346,11 @@ class _TrackCard extends StatelessWidget {
                           height: double.infinity,
                           errorBuilder: (_, __, ___) => Container(
                             alignment: Alignment.center,
-                            child: Icon(Icons.album_rounded,
-                                color: Colors.white.withValues(alpha: 0.4),
-                                size: 56),
+                            child: Icon(
+                              Icons.album_rounded,
+                              color: Colors.white.withValues(alpha: 0.4),
+                              size: 56,
+                            ),
                           ),
                         ),
                 ),
@@ -393,7 +398,22 @@ class _TrackCard extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.55),
             ),
           ),
+          if (genre != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              genre,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white.withValues(alpha: 0.45),
+              ),
+            ),
+          ],
         ],
+      ),
+    );
+        ),
       ),
     );
   }
