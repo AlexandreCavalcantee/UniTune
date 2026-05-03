@@ -412,10 +412,9 @@ class _AlbumCard extends StatelessWidget {
           ],
         ],
       ),
+    )
     );
-        ),
-      ),
-    );
+        
   }
 }
 
