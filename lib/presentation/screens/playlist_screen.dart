@@ -5,6 +5,7 @@ import '../providers/playlist_provider.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/mini_player_bar.dart';
 import 'details_screen.dart';
+import 'playlist_details_screen.dart';
 import 'album_details_screen.dart';
 import '../../domain/entities/album.dart';
 
@@ -181,34 +182,25 @@ class _RecentsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final songs = provider.songs;
+    final playlists = provider.playlists;
     final w = MediaQuery.sizeOf(context).width;
     final isCompact = w < 420;
-    final artists = <String>{
-      for (final s in songs) s.artistName,
-    }.toList()
-      ..sort();
 
-    final cards = <Widget>[];
-
-    for (final s in songs.take(3)) {
-      cards.add(_SquareMediaCard(
-        title: s.albumName,
-        subtitle: 'Playlist • 1 música',
-        imageUrl: s.artworkUrl,
-        primary: cs.primary,
-        onTap: () {},
-      ));
-    }
-
-    for (final a in artists.take(2)) {
-      final s = songs.firstWhere((x) => x.artistName == a);
-      cards.add(_ArtistCard(
-        name: a,
-        imageUrl: s.artworkUrl,
-        primary: cs.primary,
-        onTap: () {},
-      ));
+    if (playlists.isEmpty) {
+      return Container(
+        height: 120,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F22),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF27272A)),
+        ),
+        child: Center(
+          child: Text(
+            'Nenhuma playlist salva ainda.',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+          ),
+        ),
+      );
     }
 
     return GridView.count(
@@ -218,7 +210,27 @@ class _RecentsGrid extends StatelessWidget {
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
       childAspectRatio: isCompact ? 0.92 : 0.86,
-      children: cards.take(6).toList(),
+      children: playlists.take(6).map((playlist) {
+        final artworkUrl = playlist.songs.isNotEmpty ? playlist.songs.first.artworkUrl : null;
+        final subtitle = playlist.songs.isEmpty
+            ? 'Playlist vazia'
+            : '${playlist.songs.length} música${playlist.songs.length == 1 ? '' : 's'}';
+
+        return _SquareMediaCard(
+          title: playlist.name,
+          subtitle: subtitle,
+          imageUrl: artworkUrl,
+          primary: cs.primary,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PlaylistDetailsScreen(playlist: playlist),
+              ),
+            );
+          },
+        );
+      }).toList(),
     );
   }
 }
@@ -292,76 +304,6 @@ class _SquareMediaCard extends StatelessWidget {
   }
 }
 
-class _ArtistCard extends StatelessWidget {
-  const _ArtistCard({
-    required this.name,
-    required this.primary,
-    required this.onTap,
-    this.imageUrl,
-  });
-
-  final String name;
-  final String? imageUrl;
-  final Color primary;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Expanded(
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF1F1F22),
-                  border: Border.all(color: const Color(0xFF27272A)),
-                ),
-                clipBehavior: Clip.hardEdge,
-                child: imageUrl == null
-                    ? Icon(Icons.person_rounded,
-                        color: primary.withValues(alpha: 0.55), size: 44)
-                    : Image.network(
-                        imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(
-                          Icons.person_rounded,
-                          color: primary.withValues(alpha: 0.55),
-                          size: 44,
-                        ),
-                      ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            name,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            'Artista',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.45),
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _SongsSliverList extends StatelessWidget {
   const _SongsSliverList({required this.provider});
