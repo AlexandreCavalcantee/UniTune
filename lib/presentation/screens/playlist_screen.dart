@@ -5,6 +5,8 @@ import '../providers/playlist_provider.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/mini_player_bar.dart';
 import 'details_screen.dart';
+import 'album_details_screen.dart';
+import '../../domain/entities/album.dart';
 
 /// Screen showing all locally-saved songs with "suggest to radio" toggles.
 class PlaylistScreen extends StatelessWidget {
@@ -458,7 +460,28 @@ class _LibrarySongRow extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _AlbumThumb(url: song.artworkUrl),
+              _AlbumThumb(
+                url: song.artworkUrl,
+                onTap: song.collectionId != null
+                    ? () {
+                        final album = Album(
+                          collectionId: song.collectionId!,
+                          artistName: song.artistName,
+                          collectionName: song.albumName,
+                          primaryGenreName: song.genre ?? 'Unknown',
+                          artworkUrl: song.artworkUrl ?? '',
+                          collectionViewUrl: '',
+                          trackCount: 0,
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AlbumDetailsScreen(album: album),
+                          ),
+                        );
+                      }
+                    : null,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -520,45 +543,54 @@ class _LibrarySongRow extends StatelessWidget {
 }
 
 class _AlbumThumb extends StatelessWidget {
-  const _AlbumThumb({this.url});
+  const _AlbumThumb({this.url, this.onTap});
 
   final String? url;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.primary;
-    if (url == null) {
-      return Container(
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F22),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFF27272A)),
-        ),
-        child: Icon(Icons.music_note_rounded,
-            color: color.withValues(alpha: 0.5)),
-      );
-    }
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(6),
-      child: Image.network(
-        url!,
-        width: 52,
-        height: 52,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F22),
+    final child = url == null
+        ? Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F22),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: const Color(0xFF27272A)),
+            ),
+            child: Icon(Icons.music_note_rounded,
+                color: color.withValues(alpha: 0.5)),
+          )
+        : ClipRRect(
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: const Color(0xFF27272A)),
-          ),
-          child: Icon(Icons.music_note_rounded,
-              color: color.withValues(alpha: 0.5)),
-        ),
-      ),
+            child: Image.network(
+              url!,
+              width: 52,
+              height: 52,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F22),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFF27272A)),
+                ),
+                child: Icon(Icons.music_note_rounded,
+                    color: color.withValues(alpha: 0.5)),
+              ),
+            ),
+          );
+
+    if (onTap == null) {
+      return child;
+    }
+
+    return GestureDetector(
+      onTap: onTap,
+      child: child,
     );
   }
 }

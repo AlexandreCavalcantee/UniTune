@@ -90,7 +90,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
     final gradient =
         isDark ? AppTheme.darkHeaderGradient : AppTheme.lightHeaderGradient;
     final colorScheme = Theme.of(context).colorScheme;
-    final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       body: CustomScrollView(

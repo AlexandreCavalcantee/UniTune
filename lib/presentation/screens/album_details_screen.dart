@@ -25,7 +25,6 @@ class _AlbumDetailsScreenState extends State<AlbumDetailsScreen> {
   bool _isPlaying = false;
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
-  String? _audioError;
   List<Song> _tracks = [];
   int? _selectedTrackIndex;
   String? _errorMessage;
@@ -100,11 +99,8 @@ class _AlbumDetailsScreenState extends State<AlbumDetailsScreen> {
       await _player.setUrl(track.previewUrl!);
       _selectedTrackIndex = index;
       await _player.play();
-      if (mounted) setState(() => _audioError = null);
     } catch (_) {
-      if (mounted) {
-        setState(() => _audioError = 'Não foi possível reproduzir o preview.');
-      }
+      // Preview playback failed
     }
   }
 

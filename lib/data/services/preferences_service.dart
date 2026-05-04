@@ -2,13 +2,15 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'itunes_service.dart';
 import '../../domain/entities/song.dart';
+import '../../domain/entities/playlist.dart';
 
 /// Keys used in [SharedPreferences].
 class _Keys {
   static const String searchType = 'search_type';
   static const String allowExplicit = 'allow_explicit';
   static const String recentHistory = 'recent_history';
-  static const String playlist = 'playlist';
+  static const String playlist = 'playlist'; // legacy
+  static const String playlists = 'playlists'; // new
 }
 
 /// Service that persists and retrieves user preferences.
@@ -74,6 +76,24 @@ class PreferencesService {
     final raw = prefs.getStringList(_Keys.playlist) ?? [];
     return raw
         .map((s) => Song.fromMap(jsonDecode(s) as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Persists multiple playlists.
+  Future<void> savePlaylists(List<Playlist> playlists) async {
+    final prefs = await _preferences;
+    final encoded = playlists
+        .map((p) => jsonEncode(p.toMap()))
+        .toList();
+    await prefs.setStringList(_Keys.playlists, encoded);
+  }
+
+  /// Loads persisted playlists. Returns an empty list if none.
+  Future<List<Playlist>> loadPlaylists() async {
+    final prefs = await _preferences;
+    final raw = prefs.getStringList(_Keys.playlists) ?? [];
+    return raw
+        .map((p) => Playlist.fromMap(jsonDecode(p) as Map<String, dynamic>))
         .toList();
   }
 }

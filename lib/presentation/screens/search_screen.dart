@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/services/itunes_service.dart';
 import '../../domain/entities/song.dart';
 import '../providers/search_provider.dart';
 import '../providers/playlist_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/now_playing_provider.dart';
-import '../widgets/app_bottom_nav.dart';
+import '../widgets/playlist_selection_dialog.dart';
 import '../widgets/mini_player_bar.dart';
+import '../widgets/app_bottom_nav.dart';
 import 'details_screen.dart';
 
 /// Main search screen.
@@ -471,14 +471,10 @@ class _SongRow extends StatelessWidget {
                 ),
                 onPressed: inPlaylist
                     ? null
-                    : () {
-                        playlistProvider.addSong(song);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                '"${song.trackName}" adicionada na playlist'),
-                            duration: const Duration(seconds: 2),
-                          ),
+                    : () async {
+                        await showPlaylistSelectionDialog(
+                          context: context,
+                          song: song,
                         );
                       },
               ),

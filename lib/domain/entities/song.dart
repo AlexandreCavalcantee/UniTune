@@ -5,6 +5,7 @@ class Song {
   final String trackName;
   final String artistName;
   final String albumName;
+  final String? collectionId;
   final String? artworkUrl;
   final String? previewUrl;
   final String? genre;
@@ -18,6 +19,7 @@ class Song {
     required this.trackName,
     required this.artistName,
     required this.albumName,
+    this.collectionId,
     this.artworkUrl,
     this.previewUrl,
     this.genre,
@@ -33,6 +35,7 @@ class Song {
       trackName: json['trackName'] as String? ?? 'Unknown Track',
       artistName: json['artistName'] as String? ?? 'Unknown Artist',
       albumName: json['collectionName'] as String? ?? 'Unknown Album',
+      collectionId: json['collectionId']?.toString(),
       artworkUrl: (json['artworkUrl100'] as String?)?.replaceFirst(
         '100x100',
         '300x300',
@@ -52,6 +55,7 @@ class Song {
       trackName: map['track_name'] as String,
       artistName: map['artist_name'] as String,
       albumName: map['album_name'] as String,
+      collectionId: map['collection_id'] as String?,
       artworkUrl: map['artwork_url'] as String?,
       previewUrl: map['preview_url'] as String?,
       genre: map['genre'] as String?,
@@ -69,6 +73,7 @@ class Song {
       'track_name': trackName,
       'artist_name': artistName,
       'album_name': albumName,
+      'collection_id': collectionId,
       'artwork_url': artworkUrl,
       'preview_url': previewUrl,
       'genre': genre,
@@ -84,6 +89,7 @@ class Song {
     String? trackName,
     String? artistName,
     String? albumName,
+    String? collectionId,
     String? artworkUrl,
     String? previewUrl,
     String? genre,
@@ -97,6 +103,7 @@ class Song {
       trackName: trackName ?? this.trackName,
       artistName: artistName ?? this.artistName,
       albumName: albumName ?? this.albumName,
+      collectionId: collectionId ?? this.collectionId,
       artworkUrl: artworkUrl ?? this.artworkUrl,
       previewUrl: previewUrl ?? this.previewUrl,
       genre: genre ?? this.genre,
