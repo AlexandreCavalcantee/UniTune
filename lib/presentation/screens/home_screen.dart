@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../domain/entities/album.dart';
 import '../../domain/entities/song.dart';
 import '../providers/playlist_provider.dart';
 import '../providers/recommendation_provider.dart';
-import '../providers/theme_provider.dart';
 import '../screens/album_details_screen.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/mini_player_bar.dart';
 
-/// Home screen that mirrors the provided HTML layout order:
-/// top app bar → search → horizontal cards → bento grid → list → bottom nav.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -43,9 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
         top: false,
         child: Column(
           children: [
-            _TopBar(
-              onToggleTheme: context.read<ThemeProvider>().toggle,
-            ),
+            const _TopBar(),
             Expanded(
               child: IndexedStack(
                 index: _tabIndex,
@@ -55,13 +49,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     onSearch: _openSearch,
                   ),
                   const _PlaceholderTab(
-                    title: 'Search',
-                    subtitle: 'Use the search field on Home.',
+                    title: 'Pesquisa',
+                    subtitle: 'Pesquise usando a barra acima ou o botão abaixo.',
                     icon: Icons.search_rounded,
                   ),
                   const _PlaceholderTab(
-                    title: 'Library',
-                    subtitle: 'Open your saved playlist.',
+                    title: 'Biblioteca',
+                    subtitle: 'Acesse suas playlists salvas.',
                     icon: Icons.library_music_rounded,
                   ),
                 ],
@@ -104,11 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({
-    required this.onToggleTheme,
-  });
-
-  final VoidCallback onToggleTheme;
+  const _TopBar();
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +116,7 @@ class _TopBar extends StatelessWidget {
         children: [
           Icon(Icons.radio_rounded, color: cs.primary),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
               'UniTune',
               maxLines: 1,
@@ -135,18 +125,8 @@ class _TopBar extends StatelessWidget {
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -0.5,
-                color: Colors.white,
+                color: cs.onSurface,
               ),
-            ),
-          ),
-          IconButton(
-            tooltip: 'Toggle theme',
-            onPressed: onToggleTheme,
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Icons.light_mode_rounded
-                  : Icons.dark_mode_rounded,
-              color: Colors.white,
             ),
           ),
         ],
@@ -194,18 +174,18 @@ class _HomeBody extends StatelessWidget {
               children: [
                 const SizedBox(width: 12),
                 Icon(Icons.search_rounded,
-                    color: Colors.white.withValues(alpha: 0.55)),
+                    color: cs.onSurface.withValues(alpha: 0.55)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
                     controller: searchController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: cs.onSurface),
                     textInputAction: TextInputAction.search,
                     onSubmitted: (_) => onSearch(),
                     decoration: InputDecoration(
-                      hintText: 'Search artists or tracks...',
+                      hintText: 'Pesquise artistas ou faixas...',
                       hintStyle: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.35),
+                        color: cs.onSurface.withValues(alpha: 0.35),
                       ),
                       border: InputBorder.none,
                     ),
@@ -222,12 +202,12 @@ class _HomeBody extends StatelessWidget {
           const SizedBox(height: 26),
 
           // Recommended Albums
-          const Text(
+          Text(
             'Recommended for Today',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: 12),
@@ -246,7 +226,7 @@ class _HomeBody extends StatelessWidget {
                               'Adicione músicas para ver álbuns recomendados.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
+                            color: cs.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                       )
@@ -278,12 +258,12 @@ class _HomeBody extends StatelessWidget {
           const SizedBox(height: 34),
 
           // Top Playlists (list)
-          const Text(
+          Text(
             'Top Playlists',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: 12),
@@ -335,7 +315,7 @@ class _AlbumCard extends StatelessWidget {
                           alignment: Alignment.center,
                           child: Icon(
                             Icons.album_rounded,
-                            color: Colors.white.withValues(alpha: 0.4),
+                            color: cs.onSurface.withValues(alpha: 0.4),
                             size: 56,
                           ),
                         )
@@ -348,7 +328,7 @@ class _AlbumCard extends StatelessWidget {
                             alignment: Alignment.center,
                             child: Icon(
                               Icons.album_rounded,
-                              color: Colors.white.withValues(alpha: 0.4),
+                              color: cs.onSurface.withValues(alpha: 0.4),
                               size: 56,
                             ),
                           ),
@@ -382,10 +362,10 @@ class _AlbumCard extends StatelessWidget {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: 2),
@@ -395,7 +375,7 @@ class _AlbumCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.white.withValues(alpha: 0.55),
+              color: cs.onSurface.withValues(alpha: 0.55),
             ),
           ),
           if (genre != null) ...[
@@ -406,7 +386,7 @@ class _AlbumCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.white.withValues(alpha: 0.45),
+                color: cs.onSurface.withValues(alpha: 0.45),
               ),
             ),
           ],
@@ -434,7 +414,7 @@ class _PlaylistList extends StatelessWidget {
         ),
         child: Text(
           'Sua playlist ainda está vazia. Faça uma busca e adicione músicas.',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+          style: TextStyle(color: cs.onSurface.withValues(alpha: 0.6)),
         ),
       );
     }
@@ -472,7 +452,7 @@ class _PlaylistRow extends StatelessWidget {
               child: Text(
                 index.toString().padLeft(2, '0'),
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.55),
+                  color: cs.onSurface.withValues(alpha: 0.55),
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -489,13 +469,13 @@ class _PlaylistRow extends StatelessWidget {
               clipBehavior: Clip.hardEdge,
               child: song.artworkUrl == null
                   ? Icon(Icons.music_note_rounded,
-                      color: Colors.white.withValues(alpha: 0.45))
+                      color: cs.onSurface.withValues(alpha: 0.45))
                   : Image.network(
                       song.artworkUrl!,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Icon(
                         Icons.music_note_rounded,
-                        color: Colors.white.withValues(alpha: 0.45),
+                        color: cs.onSurface.withValues(alpha: 0.45),
                       ),
                     ),
             ),
@@ -508,8 +488,8 @@ class _PlaylistRow extends StatelessWidget {
                     song.trackName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: cs.onSurface,
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
                     ),
@@ -520,7 +500,7 @@ class _PlaylistRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.55),
+                      color: cs.onSurface.withValues(alpha: 0.55),
                       fontSize: 12,
                     ),
                   ),
@@ -528,7 +508,7 @@ class _PlaylistRow extends StatelessWidget {
               ),
             ),
             Icon(Icons.more_vert_rounded,
-                color: Colors.white.withValues(alpha: 0.55)),
+                color: cs.onSurface.withValues(alpha: 0.55)),
           ],
         ),
       ),
@@ -560,8 +540,8 @@ class _PlaceholderTab extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: cs.onSurface,
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
@@ -570,7 +550,7 @@ class _PlaceholderTab extends StatelessWidget {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.55)),
+              style: TextStyle(color: cs.onSurface.withValues(alpha: 0.55)),
             ),
           ],
         ),

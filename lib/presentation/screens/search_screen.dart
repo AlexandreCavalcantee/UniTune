@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../domain/entities/song.dart';
 import '../providers/search_provider.dart';
 import '../providers/playlist_provider.dart';
-import '../providers/theme_provider.dart';
 import '../providers/now_playing_provider.dart';
 import '../widgets/playlist_selection_dialog.dart';
 import '../widgets/mini_player_bar.dart';
@@ -96,28 +95,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   const SnackBar(content: Text('Menu (placeholder)')),
                 ),
               ),
-              actions: [
-                Consumer<ThemeProvider>(
-                  builder: (_, themeProvider, __) => IconButton(
-                    tooltip:
-                        themeProvider.isDark ? 'Light mode' : 'Dark mode',
-                    icon: Icon(
-                      themeProvider.isDark
-                          ? Icons.light_mode_rounded
-                          : Icons.dark_mode_rounded,
-                      color: cs.onSurface.withValues(alpha: 0.7),
-                    ),
-                    onPressed: themeProvider.toggle,
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Account',
-                  icon: Icon(Icons.account_circle_rounded,
-                      color: cs.onSurface.withValues(alpha: 0.7)),
-                  onPressed: () {},
-                ),
-                const SizedBox(width: 4),
-              ],
+              actions: [],
             ),
             SliverToBoxAdapter(
               child: Padding(
@@ -151,7 +129,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               ),
                               decoration: InputDecoration(
                                 hintText:
-                                    'Search artists, tracks, or radios...',
+                                    'Pesquise artistas, faixas ou rádios...',
                                 hintStyle: TextStyle(
                                   color: cs.onSurface.withValues(alpha: 0.3),
                                 ),
@@ -183,7 +161,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           Row(
                             children: [
                               Text(
-                                'Explicit Content',
+                                'Conteúdo explícito',
                                 style: TextStyle(
                                   color: cs.onSurface.withValues(alpha: 0.6),
                                   fontWeight: FontWeight.w600,
@@ -203,8 +181,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
                     Text(
                       provider.isSearchActive
-                          ? 'RESULTS'
-                          : 'RECENT DISCOVERIES',
+                          ? 'RESULTADOS'
+                          : 'DESCOBERTAS RECENTES',
                       style: TextStyle(
                         color: cs.onSurface.withValues(alpha: 0.4),
                         letterSpacing: 2,

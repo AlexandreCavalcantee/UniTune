@@ -26,10 +26,12 @@ class PlaylistDetailsScreen extends StatelessWidget {
     final trackLabel = trackCount == 1 ? '1 música' : '$trackCount músicas';
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
+      body: SafeArea(
+        bottom: true,
+        child: CustomScrollView(
+          slivers: [
           SliverAppBar(
-            expandedHeight: 300,
+            expandedHeight: 360,
             pinned: true,
             backgroundColor: Colors.transparent,
             leading: Padding(
@@ -70,7 +72,7 @@ class PlaylistDetailsScreen extends StatelessWidget {
                 child: SafeArea(
                   bottom: false,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+                    padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -119,7 +121,7 @@ class PlaylistDetailsScreen extends StatelessWidget {
               hasScrollBody: false,
               child: Center(
                 child: Text(
-                  'Nenhuma música nesta playlist. Volte para Search e adicione algumas.',
+                  'Nenhuma música nesta playlist. Volte para Buscar e adicione algumas.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.7),
@@ -213,8 +215,12 @@ class PlaylistDetailsScreen extends StatelessWidget {
                 childCount: current.songs.length,
               ),
             ),
+          SliverPadding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 16),
+          ),
         ],
       ),
+    )
     );
   }
 

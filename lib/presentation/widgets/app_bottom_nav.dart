@@ -43,15 +43,15 @@ class AppBottomNav extends StatelessWidget {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_rounded),
-            label: 'HOME',
+            label: 'INÍCIO',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.search_rounded),
-            label: 'SEARCH',
+            label: 'BUSCAR',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.library_music_rounded),
-            label: 'LIBRARY',
+            label: 'BIBLIOTECA',
           ),
         ],
       ),

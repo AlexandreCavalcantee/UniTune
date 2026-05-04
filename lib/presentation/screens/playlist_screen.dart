@@ -48,7 +48,7 @@ class PlaylistScreen extends StatelessWidget {
                 ),
                 actions: [
                   IconButton(
-                    tooltip: 'Search',
+                    tooltip: 'Buscar',
                     onPressed: () => Navigator.pushNamed(context, '/search'),
                     icon: Icon(Icons.search_rounded,
                         color: Colors.white.withValues(alpha: 0.65)),
@@ -58,22 +58,6 @@ class PlaylistScreen extends StatelessWidget {
                     onPressed: () => Navigator.pushNamed(context, '/search'),
                     icon: Icon(Icons.add_rounded,
                         color: Colors.white.withValues(alpha: 0.65)),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F1F22),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: cs.outline.withValues(alpha: 0.35),
-                        ),
-                      ),
-                      child: const Icon(Icons.person_rounded,
-                          size: 18, color: Colors.white),
-                    ),
                   ),
                 ],
               ),
@@ -350,7 +334,7 @@ class _SongsSliverList extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              'Sua playlist está vazia. Vá em Search e adicione músicas.',
+              'Sua playlist está vazia. Vá em Buscar e adicione músicas.',
               style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
             ),
           ),
