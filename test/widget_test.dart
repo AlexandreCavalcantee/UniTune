@@ -16,6 +16,6 @@ void main() {
     await tester.pumpAndSettle();
 
     // We should at least see the app title somewhere in the UI.
-    expect(find.text('UniRadio'), findsWidgets);
+    expect(find.text('UniTune'), findsWidgets);
   });
 }
