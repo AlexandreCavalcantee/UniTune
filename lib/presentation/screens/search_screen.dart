@@ -95,7 +95,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   const SnackBar(content: Text('Menu (placeholder)')),
                 ),
               ),
-              actions: [],
+              actions: const [],
             ),
             SliverToBoxAdapter(
               child: Padding(
@@ -369,7 +369,7 @@ class _SongRow extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final inPlaylist = playlistProvider.contains(song.trackId);
     // Duration isn't present in the current Song entity; keep layout minimal.
-    final String? durationText = null;
+    const String? durationText = null;
 
     return Material(
       color: Colors.transparent,

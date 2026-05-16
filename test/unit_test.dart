@@ -117,7 +117,7 @@ void main() {
 
   group('ItunesService entity parameter', () {
     /// Builds a minimal iTunes API response containing one track result.
-    String _fakeResponse() => jsonEncode({
+    String fakeResponse() => jsonEncode({
           'resultCount': 1,
           'results': [
             {
@@ -135,7 +135,7 @@ void main() {
       Uri? capturedUri;
       final mockClient = MockClient((request) async {
         capturedUri = request.url;
-        return http.Response(_fakeResponse(), 200);
+        return http.Response(fakeResponse(), 200);
       });
 
       final service = ItunesService(client: mockClient);
@@ -148,7 +148,7 @@ void main() {
       Uri? capturedUri;
       final mockClient = MockClient((request) async {
         capturedUri = request.url;
-        return http.Response(_fakeResponse(), 200);
+        return http.Response(fakeResponse(), 200);
       });
 
       final service = ItunesService(client: mockClient);
@@ -161,7 +161,7 @@ void main() {
       Uri? capturedUri;
       final mockClient = MockClient((request) async {
         capturedUri = request.url;
-        return http.Response(_fakeResponse(), 200);
+        return http.Response(fakeResponse(), 200);
       });
 
       final service = ItunesService(client: mockClient);
@@ -174,7 +174,7 @@ void main() {
       Uri? capturedUri;
       final mockClient = MockClient((request) async {
         capturedUri = request.url;
-        return http.Response(_fakeResponse(), 200);
+        return http.Response(fakeResponse(), 200);
       });
 
       final service = ItunesService(client: mockClient);

@@ -54,7 +54,7 @@ Future<void> showPlaylistSelectionDialog({
                             subtitle: Text(
                               '${playlist.songs.length} músicas',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.55),
+                                color: Colors.white.withValues(alpha: 0.55),
                                 fontSize: 12,
                               ),
                             ),
@@ -91,13 +91,13 @@ Future<void> showPlaylistSelectionDialog({
                           decoration: InputDecoration(
                             hintText: 'Nome da playlist',
                             hintStyle:
-                                TextStyle(color: Colors.white.withOpacity(0.5)),
+                                TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                             filled: true,
                             fillColor: const Color(0xFF0F0F12),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                               ),
                             ),
                           ),

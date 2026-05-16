@@ -56,18 +56,18 @@ abstract class AppTheme {
       colorScheme: cs,
       scaffoldBackgroundColor: const Color(0xFFF6F6F7),
       fontFamily: 'Roboto',
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 2,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        titleTextStyle: const TextStyle(
+        titleTextStyle: TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w700,
           color: Colors.white,
           letterSpacing: 0.5,
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       cardTheme: CardThemeData(
         elevation: 2,
@@ -117,16 +117,16 @@ abstract class AppTheme {
         overlayColor: primaryLight.withValues(alpha: 0.1),
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith(
-            (s) => s.contains(MaterialState.selected) ? primaryLight : null),
-        trackColor: MaterialStateProperty.resolveWith(
-            (s) => s.contains(MaterialState.selected)
+        thumbColor: WidgetStateProperty.resolveWith(
+            (s) => s.contains(WidgetState.selected) ? primaryLight : null),
+        trackColor: WidgetStateProperty.resolveWith(
+            (s) => s.contains(WidgetState.selected)
                 ? primaryLight.withValues(alpha: 0.4)
                 : null),
       ),
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith(
-            (s) => s.contains(MaterialState.selected) ? primaryLight : null),
+        fillColor: WidgetStateProperty.resolveWith(
+            (s) => s.contains(WidgetState.selected) ? primaryLight : null),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: const Color(0xFF1E1B4B),
@@ -225,16 +225,16 @@ abstract class AppTheme {
         overlayColor: primaryDark.withValues(alpha: 0.1),
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith(
-            (s) => s.contains(MaterialState.selected) ? primaryDark : null),
-        trackColor: MaterialStateProperty.resolveWith(
-            (s) => s.contains(MaterialState.selected)
+        thumbColor: WidgetStateProperty.resolveWith(
+            (s) => s.contains(WidgetState.selected) ? primaryDark : null),
+        trackColor: WidgetStateProperty.resolveWith(
+            (s) => s.contains(WidgetState.selected)
                 ? primaryDark.withValues(alpha: 0.4)
                 : null),
       ),
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith(
-            (s) => s.contains(MaterialState.selected) ? primaryDark : null),
+        fillColor: WidgetStateProperty.resolveWith(
+            (s) => s.contains(WidgetState.selected) ? primaryDark : null),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: const Color(0xFF2D2B45),
