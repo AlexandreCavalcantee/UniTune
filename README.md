@@ -110,10 +110,19 @@ lib/
 ### Theme
 - Light and dark mode support toggled from the Album Details and Playlist Details screens
 
-## Getting Started
+## Installation
+
+**Prerequisites:** Flutter SDK 3.0+ and an emulator or connected device.
 
 ```bash
+# 1. Clone the repository
+git clone https://github.com/marcusviniciusend/UniTune.git
+cd UniTune
+
+# 2. Install dependencies
 flutter pub get
+
+# 3. Run the app
 flutter run
 ```
 
