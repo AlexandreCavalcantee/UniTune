@@ -1,132 +1,132 @@
 # UniTune
 
-A music-discovery Flutter app built for a university community radio, powered by the **iTunes Search API**.
+Aplicativo mobile de descoberta de músicas feito com Flutter para uma rádio universitária, com dados da **iTunes Search API**.
 
 ---
 
-## Architecture
+## Arquitetura
 
-UniTune follows a **Layered Architecture** with three main layers:
+O UniTune segue uma **Arquitetura em Camadas** com três camadas principais:
 
 ```
 lib/
 ├── data/
 │   └── services/
 │       ├── itunes_service.dart       # iTunes Search API (http)
-│       ├── database_service.dart     # SQLite playlist storage (sqflite)
-│       └── preferences_service.dart  # Search settings (SharedPreferences)
+│       ├── database_service.dart     # Armazenamento de playlists em SQLite (sqflite)
+│       └── preferences_service.dart  # Configurações de busca (SharedPreferences)
 ├── domain/
 │   ├── entities/
-│   │   ├── song.dart                 # Song entity + iTunes/DB mapping
-│   │   ├── artist.dart               # Artist entity
-│   │   ├── album.dart                # Album entity + iTunes mapping
-│   │   └── playlist.dart             # Playlist entity (name + song list)
+│   │   ├── song.dart                 # Entidade Música + mapeamento iTunes/DB
+│   │   ├── artist.dart               # Entidade Artista
+│   │   ├── album.dart                # Entidade Álbum + mapeamento iTunes
+│   │   └── playlist.dart             # Entidade Playlist (nome + lista de músicas)
 │   └── repositories/
-│       └── playlist_repository.dart  # Playlist contract
+│       └── playlist_repository.dart  # Contrato de Playlist
 └── presentation/
     ├── providers/
-    │   ├── search_provider.dart       # Search state (ChangeNotifier)
-    │   ├── playlist_provider.dart     # Playlist CRUD state (ChangeNotifier)
-    │   ├── now_playing_provider.dart  # Global audio playback state
-    │   ├── recommendation_provider.dart # Album recommendations state
-    │   └── theme_provider.dart        # Light/dark theme toggle
+    │   ├── search_provider.dart       # Estado de busca (ChangeNotifier)
+    │   ├── playlist_provider.dart     # Estado CRUD de playlists (ChangeNotifier)
+    │   ├── now_playing_provider.dart  # Estado global de reprodução de áudio
+    │   ├── recommendation_provider.dart # Estado de recomendações de álbuns
+    │   └── theme_provider.dart        # Alternância de tema claro/escuro
     ├── screens/
-    │   ├── home_screen.dart           # Home with recommendations + playlist preview
-    │   ├── search_screen.dart         # Search UI
-    │   ├── details_screen.dart        # Track detail + 30s audio player
-    │   ├── album_details_screen.dart  # Album detail + track listing + preview
-    │   ├── playlist_screen.dart       # Local playlist management
-    │   └── playlist_details_screen.dart # Individual playlist view
+    │   ├── home_screen.dart           # Home com recomendações + prévia de playlist
+    │   ├── search_screen.dart         # Interface de busca
+    │   ├── details_screen.dart        # Detalhe da faixa + player de áudio de 30s
+    │   ├── album_details_screen.dart  # Detalhe do álbum + listagem de faixas + prévia
+    │   ├── playlist_screen.dart       # Gerenciamento de playlists locais
+    │   └── playlist_details_screen.dart # Visão individual de playlist
     ├── widgets/
-    │   ├── mini_player_bar.dart       # Persistent now-playing bar
-    │   ├── app_bottom_nav.dart        # Bottom navigation bar
-    │   └── playlist_selection_dialog.dart # Dialog to pick playlist when saving a track
+    │   ├── mini_player_bar.dart       # Barra de mini player persistente
+    │   ├── app_bottom_nav.dart        # Barra de navegação inferior
+    │   └── playlist_selection_dialog.dart # Diálogo para escolher playlist ao salvar uma faixa
     └── theme/
-        └── app_theme.dart             # Material 3 theme + header gradients
+        └── app_theme.dart             # Tema Material 3 + gradientes de cabeçalho
 ```
 
-## Tech Stack
+## Stack de Tecnologias
 
-| Concern | Package |
+| Responsabilidade | Pacote |
 |---|---|
-| UI | Flutter / Material 3 |
+| Interface | Flutter / Material 3 |
 | HTTP | `http` |
 | SQLite | `sqflite` + `path` |
-| Preferences | `shared_preferences` |
-| State Management | `provider` |
-| Audio Player | `just_audio` |
-| Playlist IDs | `uuid` |
+| Preferências | `shared_preferences` |
+| Gerenciamento de Estado | `provider` |
+| Player de Áudio | `just_audio` |
+| IDs de Playlist | `uuid` |
 
-## Features
+## Funcionalidades
 
-### Home Screen
-- Persistent top bar with the app name
-- Inline search field that navigates to the Search screen
-- **"Recommended for Today"** — horizontal album carousel driven by the user's saved songs
-- **"Top Playlists"** — preview of the first 6 saved tracks, tapping navigates to the Playlist screen
-- Bottom navigation bar (Home / Search / Library)
-- Floating action button as a shortcut to search
-- **Mini Player Bar** visible above the bottom nav whenever a track is playing
+### Tela Home
+- Barra superior persistente com o nome do app
+- Campo de busca inline que navega para a tela de Busca
+- **"Recomendados para Hoje"** — carrossel horizontal de álbuns baseado nas músicas salvas pelo usuário
+- **"Top Playlists"** — prévia das primeiras 6 faixas salvas; ao tocar, navega para a tela de Playlist
+- Barra de navegação inferior (Home / Busca / Biblioteca)
+- Botão de ação flutuante como atalho para a busca
+- **Mini Player Bar** visível acima da navegação inferior sempre que uma faixa estiver tocando
 
-### Search Screen
-- Free-text search field with submit button
-- **Radio buttons** to switch between *Song*, *Artist*, and *Album* search
-- **Explicit switch** to filter out explicit content
-- Settings are persisted via `SharedPreferences`
-- Results displayed in a scrollable `ListView` of `Card` widgets
+### Tela de Busca
+- Campo de busca livre com botão de envio
+- **Botões de rádio** para alternar entre busca por *Música*, *Artista* e *Álbum*
+- **Filtro de conteúdo explícito** para ocultar conteúdo inapropriado
+- Configurações persistidas via `SharedPreferences`
+- Resultados exibidos em uma `ListView` rolável de widgets `Card`
 
-### Details Screen
-- Large album art (300×300 from iTunes CDN)
-- Track name, artist, album, genre, explicit badge
-- **30-second audio preview** player with seek slider
-- Add track to a local playlist via a selection dialog
+### Tela de Detalhes
+- Arte do álbum grande (300×300 do CDN do iTunes)
+- Nome da faixa, artista, álbum, gênero e selo de conteúdo explícito
+- Player de **prévia de áudio de 30 segundos** com barra de progresso
+- Adicionar faixa a uma playlist local via diálogo de seleção
 
-### Album Details Screen
-- Collapsible parallax header with album art and gradient background
-- Metadata chips: genre, release date, track count, price
-- Complete track listing fetched from the iTunes API
-- Tap any track to toggle its 30-second audio preview, with a seek slider shown for the active track
-- Light/dark theme toggle button in the app bar
+### Tela de Detalhes do Álbum
+- Cabeçalho paralaxe recolhível com arte do álbum e fundo gradiente
+- Chips de metadados: gênero, data de lançamento, número de faixas, preço
+- Listagem completa de faixas obtida da API do iTunes
+- Toque em qualquer faixa para alternar a prévia de 30 segundos, com barra de progresso exibida para a faixa ativa
+- Botão de alternância de tema claro/escuro na barra do app
 
-### Playlist Screen
-- All locally-saved playlists (SQLite)
-- **"Suggest to radio"** checkbox per track (persisted)
-- Delete individual tracks
-- Tap any playlist to open its detail view
+### Tela de Playlists
+- Todas as playlists salvas localmente (SQLite)
+- Checkbox **"Sugerir à rádio"** por faixa (persistido)
+- Deletar faixas individuais
+- Toque em qualquer playlist para abrir sua visão detalhada
 
-### Playlist Details Screen
-- Collapsible parallax header with playlist art and gradient background
-- Playlist name and track count
-- Full track listing with artwork thumbnails
-- Tap any track to open its Details screen
-- Light/dark theme toggle button in the app bar
+### Tela de Detalhes da Playlist
+- Cabeçalho paralaxe recolhível com arte da playlist e fundo gradiente
+- Nome da playlist e contagem de faixas
+- Listagem completa de faixas com miniaturas de capa
+- Toque em qualquer faixa para abrir sua tela de Detalhes
+- Botão de alternância de tema claro/escuro na barra do app
 
 ### Mini Player Bar
-- Appears above the bottom navigation bar whenever a track is playing
-- Shows album art thumbnail, track name, and artist name
-- Play / pause button
-- Thin progress bar at the bottom of the bar (tap to seek)
+- Aparece acima da barra de navegação inferior sempre que uma faixa estiver tocando
+- Exibe miniatura da capa do álbum, nome da faixa e nome do artista
+- Botão de play / pause
+- Barra de progresso fina na parte inferior da barra (toque para avançar)
 
-### Theme
-- Light and dark mode support toggled from the Album Details and Playlist Details screens
+### Tema
+- Suporte a modo claro e escuro, alternado nas telas de Detalhes do Álbum e Detalhes da Playlist
 
-## Installation
+## Instalação
 
-**Prerequisites:** Flutter SDK 3.0+ and an emulator or connected device.
+**Pré-requisitos:** Flutter SDK 3.0+ e um emulador ou dispositivo conectado.
 
 ```bash
-# 1. Clone the repository
+# 1. Clone o repositório
 git clone https://github.com/marcusviniciusend/UniTune.git
 cd UniTune
 
-# 2. Install dependencies
+# 2. Instale as dependências
 flutter pub get
 
-# 3. Run the app
+# 3. Execute o app
 flutter run
 ```
 
-## Running Tests
+## Executando os Testes
 
 ```bash
 flutter test
